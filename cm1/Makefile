@@ -5,7 +5,7 @@
 #DM = -DMPI
 #-----------------------------------------------------------------------------
 #  multiple processors, shared memory (OpenMP), GNU compiler
-FC   = gfortran-11
+FC   = gfortran
 OPTS = -ffree-form -ffree-line-length-none -O2 -finline-functions -fopenmp
 CPP  = cpp -C -P -traditional -Wno-invalid-pp-token -ffreestanding
 OMP  = -DOPENMP
