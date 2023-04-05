@@ -17,10 +17,8 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /run/systemd && echo 'docker' > /run/systemd/container
 RUN  apt-get update --fix-missing \
      && apt-get install -y git \
-     && apt-get install -y build-essential gfortran-11 \
-     && apt-get install -y ssh time \
-     && apt-get clean \
-     && rm -rf /var/lib/apt/lists/*
+     && apt-get install -y build-essential gfortran \
+     && apt-get install -y ssh time 
 RUN cd /home \
     && wget https://www2.mmm.ucar.edu/people/bryan/cm1/cm1r21.0.tar.gz \
     && tar xvf cm1r21.0.tar.gz
