@@ -17,7 +17,7 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /run/systemd && echo 'docker' > /run/systemd/container
 RUN  apt-get update --fix-missing \
      && apt-get install -y git \
-     && apt-get install -y build-essential gfortran \
+     && apt-get install -y build-essential gfortran-11 \
      && apt-get install -y ssh time \
      && apt-get clean \
      && rm -rf /var/lib/apt/lists/*
@@ -31,7 +31,7 @@ RUN git clone https://github.com/raijenki/hpc-tests.git \
 
 FROM alpine:latest  
 RUN apk --no-cache add ca-certificates
-RUN apt-get install -y git build-essential gfortran
+RUN apt-get install -y git
 WORKDIR /home/
 RUN git clone //github.com/raijenki/hpc-tests.git
 COPY --from=0 /home/cm1.exe ./hpc-tests/cm1/
