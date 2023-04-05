@@ -24,14 +24,15 @@ RUN  apt-get update --fix-missing \
 RUN cd /home \
     && wget https://www2.mmm.ucar.edu/people/bryan/cm1/cm1r21.0.tar.gz \
     && tar xvf cm1r21.0.tar.gz
-RUN git clone https://github.com/raijenki/paper-wocc \
-    && cd mpi-k8s/stream \
-    && make \
-    && cp stream_c /home/
-    && rm -rf "/mpi-k8s"
+RUN git clone https://github.com/raijenki/hpc-tests.git \
+    && cp hpc-tests/cm1/Makefile /home/cm1r21.0/src/. \
+    && cd /home/cm1r21.0/src && make \
+    && cp /home/cm1r21.0/run/cm1.exe /home/
 
 FROM alpine:latest  
 RUN apk --no-cache add ca-certificates
-WORKDIR /root/
-COPY --from=0 /home/stream_c ./
+RUN apt-get install -y git build-essential gfortran
+WORKDIR /home/
+RUN git clone //github.com/raijenki/hpc-tests.git
+COPY --from=0 /home/cm1.exe ./hpc-tests/cm1/
 CMD mkdir -p /var/run/sshd; /usr/sbin/sshd;
