@@ -19,18 +19,17 @@ RUN  apt-get update --fix-missing \
      && apt-get install -y git \
      && apt-get install -y build-essential gfortran \
      && apt-get install -y ssh time 
-RUN cd /home \
-    && wget https://www2.mmm.ucar.edu/people/bryan/cm1/cm1r21.0.tar.gz \
-    && tar xvf cm1r21.0.tar.gz
-RUN git clone https://github.com/raijenki/hpc-tests.git \
-    && cp hpc-tests/cm1/Makefile /home/cm1r21.0/src/. \
-    && cd /home/cm1r21.0/src && make \
-    && cp /home/cm1r21.0/run/cm1.exe /home/
+RUN cd /home/ && wget https://www2.mmm.ucar.edu/people/bryan/cm1/cm1r20.3.tar.gz \
+    && tar xvf cm1r20.3.tar.gz
+RUN cd /home/ && git clone https://github.com/raijenki/hpc-tests.git \
+    && cp /home/hpc-tests/cm1/Makefile /home/cm1r20.3/src/. \
+    && cd /home/cm1r20.3/src && make -j \
+    && cp /home/cm1r20.3/run/cm1.exe /home/
 
 FROM alpine:latest  
 RUN apk --no-cache add ca-certificates
-RUN apt-get install -y git
+RUN apk add git
 WORKDIR /home/
-RUN git clone //github.com/raijenki/hpc-tests.git
+RUN git clone http://github.com/raijenki/hpc-tests.git
 COPY --from=0 /home/cm1.exe ./hpc-tests/cm1/
 CMD mkdir -p /var/run/sshd; /usr/sbin/sshd;
