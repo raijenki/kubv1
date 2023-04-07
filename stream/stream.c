@@ -413,7 +413,7 @@ int main(int argc, char **argv) {
     printf(HLINE);
 
     /* --- Check Results --- */
-    //checkSTREAMresults();
+    checkSTREAMresults();
     printf(HLINE);
 
     return 0;
@@ -474,7 +474,7 @@ int stream_write(int k, double time_log[4][NTIMES]) {
 	fclose(f1);
 
 	FILE *f2 = fopen("/data/time.dat", "w");
-	FILE *f3 = fopen("/data/a.dat", "w");
+	//FILE *f3 = fopen("/data/a.dat", "w");
 	for (int i = 0; i < 4; i++) {
 		for(int j = 0; j < k; j++) {
     	fprintf(f2, "%f\n", time_log[i][j]);

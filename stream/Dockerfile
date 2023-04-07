@@ -24,14 +24,13 @@ RUN  apt-get update --fix-missing \
      && apt-get install -y ssh time \
      && apt-get clean \
      && rm -rf /var/lib/apt/lists/*
-RUN git clone https://github.com/SPS-Lab/mpi-k8s.git \
-    && cd mpi-k8s/stream \
+RUN git clone https://github.com/raijenki/hpc-tests.git \
+    && cd hpc-tests/stream \
     && make \
-    && cp stream_c /home/ \
-    && rm -rf "/mpi-k8s"
+    && cp stream_c /home/
 
 FROM alpine:latest  
 RUN apk --no-cache add ca-certificates
-WORKDIR /root/
+WORKDIR /home/
 COPY --from=0 /home/stream_c ./
 CMD mkdir -p /var/run/sshd; /usr/sbin/sshd;

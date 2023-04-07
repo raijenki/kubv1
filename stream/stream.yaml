@@ -29,10 +29,10 @@ spec:
         args: ["2000"]
         resources:
           requests:
-            cpu: 1
+            cpu: 8
             memory: "4000Mi"
           limits:
-            cpu: 1
+            cpu: 8
             memory: "4000Mi"
         env:
           - name: OMP_NUM_THREADS
