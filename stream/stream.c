@@ -343,7 +343,7 @@ int main(int argc, char **argv) {
 
 		k = k + qq;
 		backup = 2; // Ensure this is executed only once
-		printf("RESUMING...!!\n");
+		printf("RESUMING FROM POINT %d...!!\n", k);
 	}
 	
 	times[0][k] = mysecond();
