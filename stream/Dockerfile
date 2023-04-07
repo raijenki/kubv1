@@ -34,5 +34,3 @@ WORKDIR /home
 COPY --from=base /home/hpc-tests/stream/stream_c .
 COPY --from=base /home/hpc-tests/stream/stream.py .
 RUN chmod +x stream_c
-ENTRYPOINT ["/bin/bash"]
-CMD mkdir -p /var/run/sshd; /usr/sbin/sshd;

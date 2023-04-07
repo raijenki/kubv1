@@ -7,7 +7,7 @@ spec:
   selector:
     matchLabels:
       app: stream
-  backoffLimit: 4
+  backoffLimit: 0
   ttlSecondsAfterFinished: 600
   template:
     metadata:
@@ -21,17 +21,14 @@ spec:
       containers:
       - name: stream
         image: raijenki/mpik8s:stream
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         volumeMounts:
           - mountPath: /data
             name: task-pv-storage
-        command: ["python3", "stream.py"]
+        command: ["/usr/bin/python3", "stream.py"]
         args: ["2000"]
         resources:
           requests:
-            cpu: 14
-            memory: "4000Mi"
-          limits:
             cpu: 14
             memory: "4000Mi"
         env:
