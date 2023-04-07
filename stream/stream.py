@@ -1,3 +1,4 @@
+# This launcher script is supposed to replace application calls and forward SIGTERM signals to them
 import time
 import signal
 import os
@@ -5,7 +6,7 @@ import sys
 import subprocess
 from multiprocessing import Process
 
-STOP_TIMEOUT = 30
+STOP_TIMEOUT = 10
 stream = None
 
 def signal_handler(sig, _frame):
