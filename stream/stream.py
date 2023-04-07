@@ -22,7 +22,7 @@ def signal_handler(sig, _frame):
 def main():
     """Opening subprocesses"""
     global stream
-    stream = subprocess.Popen(["/home/daniel/Desktop/paper/stream/stream_c"] + sys.argv[1:])
+    stream = subprocess.Popen(["/home/stream_c"] + sys.argv[1:])
     signal.signal(signal.SIGTERM, signal_handler)
     stream.wait()
     print("Finish execution...")
