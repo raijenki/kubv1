@@ -25,7 +25,7 @@ spec:
         volumeMounts:
           - mountPath: /data
             name: task-pv-storage
-        command: ["./stream_c"]
+        command: ["python3 stream.py"]
         args: ["2000"]
         resources:
           requests:

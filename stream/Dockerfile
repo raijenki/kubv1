@@ -24,15 +24,15 @@ RUN  apt-get update --fix-missing \
      && apt-get install -y ssh time \
      && apt-get clean \
      && rm -rf /var/lib/apt/lists/*
-RUN git clone https://github.com/raijenki/hpc-tests.git \
+RUN cd /home && git clone https://github.com/raijenki/hpc-tests.git \
     && cd hpc-tests/stream \
-    && make \
-    && cp stream_c /home/
+    && make
 
 FROM debian:11-slim As prod
-RUN apt-get update && apt-get install -y glibc-source libgomp1
+RUN apt-get update && apt-get install -y glibc-source libgomp1 python3
 WORKDIR /home
-COPY --from=base /home/stream_c .
+COPY --from=base /home/hpc-tests/stream/stream_c .
+COPY --from=base /home/hpc-tests/stream/stream.py .
 RUN chmod +x stream_c
 ENTRYPOINT ["/bin/bash"]
 CMD mkdir -p /var/run/sshd; /usr/sbin/sshd;
