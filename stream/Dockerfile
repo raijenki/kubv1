@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM debian:11 As base
 RUN /bin/sh -c set -xe \ 
     && echo '#!/bin/sh' > /usr/sbin/policy-rc.d \
     && echo 'exit 101' >> /usr/sbin/policy-rc.d \
@@ -29,8 +29,10 @@ RUN git clone https://github.com/raijenki/hpc-tests.git \
     && make \
     && cp stream_c /home/
 
-FROM alpine:latest  
-RUN apk --no-cache add ca-certificates
-WORKDIR /home/
-COPY --from=0 /home/stream_c ./
+FROM debian:11-slim As prod
+RUN apt-get update && apt-get install -y glibc-source libgomp1
+WORKDIR /home
+COPY --from=base /home/stream_c .
+RUN chmod +x stream_c
+ENTRYPOINT ["/bin/bash"]
 CMD mkdir -p /var/run/sshd; /usr/sbin/sshd;

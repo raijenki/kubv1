@@ -21,11 +21,11 @@ spec:
       containers:
       - name: stream
         image: raijenki/mpik8s:stream
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         volumeMounts:
           - mountPath: /data
             name: task-pv-storage
-        command: ["/home/stream_c"]
+        command: ["./stream_c"]
         args: ["2000"]
         resources:
           requests:
