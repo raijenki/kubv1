@@ -328,16 +328,20 @@ int main(int argc, char **argv) {
 		// file exists, load times
 		char placebo[3];
 		FILE *f1 = fopen("/data/k.dat", "r");
-		fscanf(f1,"%d", &qq);
+		if (!fscanf(f1,"%d", &qq)) {
+			break;
+		}
 		fclose(f1);
 
 		FILE *f2 = fopen("/data/time.dat", "r");
 		for (int i = 0; i < 4; i++) {
 			for(int j = 0; j < qq; j++) {
-				fscanf(f2, "%lf\n", &times[i][j]);
+				if (!fscanf(f2, "%lf\n", &times[i][j])) { 
+					break; 
+				}
 		// check for error here too
 			}
-			fscanf(f2, "%c%c%c\n", &placebo[0], &placebo[1], &placebo[2]);
+			if (!fscanf(f2, "%c%c%c\n", &placebo[0], &placebo[1], &placebo[2])) { break; };
 		}
 		fclose(f2);
 
