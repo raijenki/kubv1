@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:22.04 As base
 RUN /bin/sh -c set -xe \ 
     && echo '#!/bin/sh' > /usr/sbin/policy-rc.d \
     && echo 'exit 101' >> /usr/sbin/policy-rc.d \
@@ -17,7 +17,7 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /run/systemd && echo 'docker' > /run/systemd/container
 RUN  apt-get update --fix-missing \
      && apt-get install -y wget git \
-     && apt-get install -y build-essential gfortran \
+     && apt-get install -y build-essential gfortran libopenmpi-dev \
      && apt-get install -y ssh time 
 RUN cd /home/ && wget https://www2.mmm.ucar.edu/people/bryan/cm1/cm1r20.3.tar.gz \
     && tar xvf cm1r20.3.tar.gz
@@ -26,10 +26,8 @@ RUN cd /home/ && git clone https://github.com/raijenki/hpc-tests.git \
     && cd /home/cm1r20.3/src && make -j \
     && cp /home/cm1r20.3/run/cm1.exe /home/
 
-FROM alpine:latest  
-RUN apk --no-cache add ca-certificates
-RUN apk add git
-WORKDIR /home/
+FROM debian:11-slim As prod
+RUN apk-get update && apt-get install -y glibc-source libgomp1 libopenmpi3 python3
+WORKDIR /home
 RUN git clone http://github.com/raijenki/hpc-tests.git
-COPY --from=0 /home/cm1.exe ./hpc-tests/cm1/
-CMD mkdir -p /var/run/sshd; /usr/sbin/sshd;
+COPY --from=base /home/cm1.exe /hpc-tests/cm1/.
