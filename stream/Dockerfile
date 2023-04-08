@@ -32,5 +32,5 @@ FROM debian:11-slim As prod
 RUN apt-get update && apt-get install -y glibc-source libgomp1 python3
 WORKDIR /home
 COPY --from=base /home/hpc-tests/stream/stream_c .
-COPY --from=base /home/hpc-tests/stream/stream.py .
+COPY --from=base /home/hpc-tests/stream/launcher.py .
 RUN chmod +x stream_c
