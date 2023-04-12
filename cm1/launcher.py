@@ -12,7 +12,7 @@ STOP_TIMEOUT = 20
 app = None
 app_ssh = None
 MPI_HOST = None
-MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host" +  str(MPI_HOST) + "-np 4 /home/hpc-tests/cm1/cm1.exe"
+MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host " +  str(MPI_HOST) + " -np 4 /home/hpc-tests/cm1/cm1.exe"
 WORKER_CMD = "/usr/sbin/sshd -D"
 
 def signal_handler(sig, _frame):
@@ -36,6 +36,7 @@ def main_worker():
 
 def main_master():
     global app
+    global MPI_HOST
     """Opening subprocesses"""
     app_ssh = subprocess.Popen("/usr/sbin/sshd", preexec_fn=os.setsid)
     time.sleep(20) # Ensure all workers will be spawned first

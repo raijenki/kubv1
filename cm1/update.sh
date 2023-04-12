@@ -1,3 +1,4 @@
+kubectl delete -f cm1.yaml
 git add .
 git commit -m "sleep is time, not os"
 git push
