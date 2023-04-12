@@ -23,7 +23,7 @@ def signal_handler(sig, _frame):
 def main_worker():
     """Opening subprocesses"""
     global stream
-    cm1 = subprocess.Popen(["/usr/sbin/sshd -D"], preexec_fn=os.setsid)
+    cm1 = subprocess.Popen(["/usr/sbin/sshd"], args=["-D"], preexec_fn=os.setsid)
     signal.signal(signal.SIGTERM, signal_handler)
     cm1.wait()
     print("Finish execution...")

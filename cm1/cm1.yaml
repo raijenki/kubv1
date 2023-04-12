@@ -37,7 +37,7 @@ spec:
       template:
         spec:
           containers:
-            - command: ["/usr/bin/python3", "launcher.py"]
+            - command: ["/usr/bin/python3", "hpc-tests/cm1/launcher.py"]
               image: raijenki/mpik8s:cm1
               imagePullPolicy: Always
               name: mpiworker
