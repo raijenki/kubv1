@@ -27,7 +27,9 @@ RUN cd /home/ && git clone https://github.com/raijenki/hpc-tests.git \
     && cp /home/cm1r20.3/run/cm1.exe /home/
 
 FROM debian:11-slim As prod
-RUN apt-get update && apt-get install -y gfortran openmpi-bin python3 git
+RUN apt-get update && apt-get install -y gfortran openmpi-bin python3 git ssh time
 WORKDIR /home
 RUN cd /home && git clone http://github.com/raijenki/hpc-tests.git
 COPY --from=base /home/cm1.exe /home/hpc-tests/cm1/.
+RUN mkdir -p /var/run/sshd;
+CMD /usr/sbin/sshd;

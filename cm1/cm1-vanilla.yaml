@@ -37,7 +37,11 @@ spec:
       template:
         spec:
           containers:
-            - command: ["/usr/bin/python3", "launcher.py"]
+            - command:
+                - /bin/sh
+                - -c
+                - |
+                  mkdir -p /var/run/sshd; /usr/sbin/sshd -D;
               image: raijenki/mpik8s:cm1
               imagePullPolicy: Always
               name: mpiworker
