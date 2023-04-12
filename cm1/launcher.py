@@ -39,7 +39,7 @@ def main_master():
     global MPI_HOST
     """Opening subprocesses"""
     app_ssh = subprocess.Popen("/usr/sbin/sshd", preexec_fn=os.setsid)
-    time.sleep(20) # Ensure all workers will be spawned first
+    time.sleep(60) # Ensure all workers will be spawned first
     ssh_hosts = open("/etc/volcano/mpiworker.host")
     MPI_HOST = ','.join(line.strip() for line in ssh_hosts)
     os.environ["MPI_HOST"] = MPI_HOST
