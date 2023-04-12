@@ -11,7 +11,7 @@ STOP_TIMEOUT = 20
 app = None
 app_ssh = None
 MPI_HOST = None
-MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host" +  MPI_HOST + "-np 4 /home/hpc-tests/cm1/cm1.exe"
+MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host" +  str(MPI_HOST) + "-np 4 /home/hpc-tests/cm1/cm1.exe"
 WORKER_CMD = "/usr/sbin/sshd -D"
 
 def signal_handler(sig, _frame):
@@ -36,10 +36,11 @@ def main_worker():
 def main_master():
     global app
     """Opening subprocesses"""
+    app_ssh = subprocess.Popen("/usr/sbin/sshd", preexec_fn=os.setsid)
+    os.sleep(20)
     ssh_hosts = open("/etc/volcano/mpiworker.host")
     MPI_HOST = ','.join(line.strip() for line in ssh_hosts)
     os.environ["MPI_HOST"] = MPI_HOST
-    app_ssh = subprocess.Popen("/usr/sbin/sshd", preexec_fn=os.setsid)
     app = subprocess.Popen(shlex.split(MASTER_CMD), preexec_fn=os.setsid)
     signal.signal(signal.SIGTERM, signal_handler)
     app.wait()
