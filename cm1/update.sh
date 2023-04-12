@@ -1,5 +1,5 @@
 git add .
-git commit -m "fix launcher, autoscript"
+git commit -m "sleep is time, not os"
 git push
 docker rmi raijenki/mpik8s:cm1
 docker build . -t raijenki/mpik8s:cm1

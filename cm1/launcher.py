@@ -3,6 +3,7 @@ import time
 import signal
 import os
 import sys
+import time
 import subprocess
 import shlex
 from multiprocessing import Process
@@ -37,7 +38,7 @@ def main_master():
     global app
     """Opening subprocesses"""
     app_ssh = subprocess.Popen("/usr/sbin/sshd", preexec_fn=os.setsid)
-    os.sleep(20)
+    time.sleep(20) # Ensure all workers will be spawned first
     ssh_hosts = open("/etc/volcano/mpiworker.host")
     MPI_HOST = ','.join(line.strip() for line in ssh_hosts)
     os.environ["MPI_HOST"] = MPI_HOST
