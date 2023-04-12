@@ -10,13 +10,14 @@ from multiprocessing import Process
 STOP_TIMEOUT = 20
 app = None
 app_ssh = None
-MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host ${MPI_HOST} -np 4 /home/hpc-tests/cm1/cm1.exe"
+MPI_HOST = None
+MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host" +  MPI_HOST + "-np 4 /home/hpc-tests/cm1/cm1.exe"
 WORKER_CMD = "/usr/sbin/sshd -D"
 
 def signal_handler(sig, _frame):
     """Handling the SIGTERM event"""
     print(f'Received signal {sig} - stopping gracefully in 30 seconds')
-    os.killpg(os.getpgid(stream.pid), sig)
+    os.killpg(os.getpgid(app.pid), sig)
     count = STOP_TIMEOUT
     while count > 0:
         time.sleep(1)
@@ -38,7 +39,6 @@ def main_master():
     ssh_hosts = open("/etc/volcano/mpiworker.host")
     MPI_HOST = ','.join(line.strip() for line in ssh_hosts)
     os.environ["MPI_HOST"] = MPI_HOST
-    
     app_ssh = subprocess.Popen("/usr/sbin/sshd", preexec_fn=os.setsid)
     app = subprocess.Popen(shlex.split(MASTER_CMD), preexec_fn=os.setsid)
     signal.signal(signal.SIGTERM, signal_handler)
