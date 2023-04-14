@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.grpc.mpi_monitor";
+option java_outer_classname = "MPIMonitorProto";
+option objc_class_prefix = "MMG";
+
+package mpi_monitor;
+
+// Interface exported by the server.
+service Monitor {
+	// This should be used for sending resources to the server
+	rpc SendResources(availNodes) returns (Confirmation) {}
+
+	// This should be used for sending shutdown notices for the clients
+	rpc activeNode(nodeName) returns (Confirmation) {} 
+
+	// This should be used for 
+}
+
+message availNodes {
+	int32 nodes = 1;
+}
+
+message nodeName {
+	string nodeName = 1;
+}
+
+message Confirmation {
+	string confirmMessage = 1;
+}
