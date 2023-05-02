@@ -8,6 +8,9 @@ import mpi_monitor_pb2_grpc
 class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
 
     def SendResources(self, request, context):
+        print("We received the message SendResources")
+        if(request.nodes == 4):
+            print("Four nodes!!")
         return mpi_monitor_pb2.Confirmation(confirmMessage='Hello!')
     def activeNode(self, request, context):
         return mpi_monitor_pb2.Confirmation(confirmMessage='Hello again!')

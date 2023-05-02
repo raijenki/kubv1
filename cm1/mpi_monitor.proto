@@ -9,13 +9,21 @@ package mpi_monitor;
 
 // Interface exported by the server.
 service Monitor {
-	// This should be used for sending resources to the server
-	rpc SendResources(availNodes) returns (Confirmation) {}
+	// We order the server to scale (from: scheduler, to: MPIServer)
+	rpc Scale(additionalNodes) returns (Confirmation) {}
 
-	// This should be used for sending shutdown notices for the clients
-	rpc activeNode(nodeName) returns (Confirmation) {} 
+	// We send the files for updating all our hosts (from: MPIServer, to: client)
+	rpc RetrieveKeys(nodeName) returns (SSHKeys) {}
 
-	// This should be used for 
+	// We tell that our auxiliary pods are ready to start the job
+	rpc JobInit(nodeName) returns (Confirmation) {}
+
+	// This should be used for checking whether the master is alive
+	rpc activeServer(nodeName) returns (Confirmation) {} 
+}
+
+message Scale {
+	int32 nodes = 1;
 }
 
 message availNodes {
@@ -28,4 +36,10 @@ message nodeName {
 
 message Confirmation {
 	string confirmMessage = 1;
+	int32 confirmId = 2;
+}
+
+message SSHKeys {
+	string pubJobKey = 1;
+	int32 confirmId = 3;
 }
