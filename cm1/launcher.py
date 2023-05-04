@@ -227,8 +227,10 @@ def main_worker(podname):
     # We send signal to server every minute so we know whether we should end or not the application
     end = 0
     while end == 0:
-        time.sleep(60)
+        time.sleep(20)
         end = check_activity()
+        with open("/root/hahaha.txt", "a") as f:
+            f.writelines(end)
 
     # Send a final message to server that we're shutting down the application now
     end_exec()
@@ -269,11 +271,11 @@ def main_master():
     # We wait application to be done    
     while concludedRanks != getNumberOfRanks():
         if app.poll() == None:
-            with open("/root/hahaha.txt", "w") as f:
+            with open("/root/hahaha.txt", "a") as f:
                 f.writelines("HAHAHAHAHAHA\n")
             time.sleep(20)
         elif app.poll() != None and chkPt == 0: # MPI app is not active and also we don't need to checkpoint here
-            with open("/root/hahaha.txt", "w") as f:
+            with open("/root/hahaha.txt", "a") as f:
                 f.writelines("HEHEHEHEHEHE\n")
             ended_exec = 1 # Execution is over, now wait for all ranks to send message of conclusion
         elif app.poll() != None and chkPt == 2:
