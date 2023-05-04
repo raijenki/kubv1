@@ -265,9 +265,9 @@ def main_master():
     # We wait application to be done    
     while concludedRanks != getNumberOfRanks():
         poll = app.poll()
-        if poll is not None and chkPt is 0: # MPI app is not active and also we don't need to checkpoint here
+        if poll != None and chkPt == 0: # MPI app is not active and also we don't need to checkpoint here
             ended_exec = 1 # Execution is over, now wait for all ranks to send message of conclusion
-        if poll is not None and chkPt is 2:
+        if poll != None and chkPt == 2:
             wait_signal()
             chkPt = 0
             start_mpi() # Restart our mpi job
