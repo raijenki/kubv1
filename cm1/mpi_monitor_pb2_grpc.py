@@ -15,14 +15,34 @@ class MonitorStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.SendResources = channel.unary_unary(
-                '/mpi_monitor.Monitor/SendResources',
-                request_serializer=mpi__monitor__pb2.availNodes.SerializeToString,
+        self.Scale = channel.unary_unary(
+                '/mpi_monitor.Monitor/Scale',
+                request_serializer=mpi__monitor__pb2.additionalNodes.SerializeToString,
                 response_deserializer=mpi__monitor__pb2.Confirmation.FromString,
                 )
-        self.activeNode = channel.unary_unary(
-                '/mpi_monitor.Monitor/activeNode',
+        self.RetrieveKeys = channel.unary_unary(
+                '/mpi_monitor.Monitor/RetrieveKeys',
                 request_serializer=mpi__monitor__pb2.nodeName.SerializeToString,
+                response_deserializer=mpi__monitor__pb2.SSHKeys.FromString,
+                )
+        self.JobInit = channel.unary_unary(
+                '/mpi_monitor.Monitor/JobInit',
+                request_serializer=mpi__monitor__pb2.nodeName.SerializeToString,
+                response_deserializer=mpi__monitor__pb2.Confirmation.FromString,
+                )
+        self.activeServer = channel.unary_unary(
+                '/mpi_monitor.Monitor/activeServer',
+                request_serializer=mpi__monitor__pb2.Empty.SerializeToString,
+                response_deserializer=mpi__monitor__pb2.Confirmation.FromString,
+                )
+        self.checkpointing = channel.unary_unary(
+                '/mpi_monitor.Monitor/checkpointing',
+                request_serializer=mpi__monitor__pb2.Empty.SerializeToString,
+                response_deserializer=mpi__monitor__pb2.Confirmation.FromString,
+                )
+        self.endExec = channel.unary_unary(
+                '/mpi_monitor.Monitor/endExec',
+                request_serializer=mpi__monitor__pb2.Empty.SerializeToString,
                 response_deserializer=mpi__monitor__pb2.Confirmation.FromString,
                 )
 
@@ -31,15 +51,43 @@ class MonitorServicer(object):
     """Interface exported by the server.
     """
 
-    def SendResources(self, request, context):
-        """This should be used for sending resources to the server
+    def Scale(self, request, context):
+        """We order the server to scale (from: scheduler, to: MPIServer)
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def activeNode(self, request, context):
-        """This should be used for sending shutdown notices for the clients
+    def RetrieveKeys(self, request, context):
+        """We send the files for updating all our hosts (from: scaled client, to: MPIServer)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def JobInit(self, request, context):
+        """We tell that our auxiliary pods are ready to start the job
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def activeServer(self, request, context):
+        """This should be used for checking whether the master is alive
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def checkpointing(self, request, context):
+        """This should be used for telling server that checkpointing is done
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def endExec(self, request, context):
+        """This should be used for telling server that execution is over
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -48,14 +96,34 @@ class MonitorServicer(object):
 
 def add_MonitorServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'SendResources': grpc.unary_unary_rpc_method_handler(
-                    servicer.SendResources,
-                    request_deserializer=mpi__monitor__pb2.availNodes.FromString,
+            'Scale': grpc.unary_unary_rpc_method_handler(
+                    servicer.Scale,
+                    request_deserializer=mpi__monitor__pb2.additionalNodes.FromString,
                     response_serializer=mpi__monitor__pb2.Confirmation.SerializeToString,
             ),
-            'activeNode': grpc.unary_unary_rpc_method_handler(
-                    servicer.activeNode,
+            'RetrieveKeys': grpc.unary_unary_rpc_method_handler(
+                    servicer.RetrieveKeys,
                     request_deserializer=mpi__monitor__pb2.nodeName.FromString,
+                    response_serializer=mpi__monitor__pb2.SSHKeys.SerializeToString,
+            ),
+            'JobInit': grpc.unary_unary_rpc_method_handler(
+                    servicer.JobInit,
+                    request_deserializer=mpi__monitor__pb2.nodeName.FromString,
+                    response_serializer=mpi__monitor__pb2.Confirmation.SerializeToString,
+            ),
+            'activeServer': grpc.unary_unary_rpc_method_handler(
+                    servicer.activeServer,
+                    request_deserializer=mpi__monitor__pb2.Empty.FromString,
+                    response_serializer=mpi__monitor__pb2.Confirmation.SerializeToString,
+            ),
+            'checkpointing': grpc.unary_unary_rpc_method_handler(
+                    servicer.checkpointing,
+                    request_deserializer=mpi__monitor__pb2.Empty.FromString,
+                    response_serializer=mpi__monitor__pb2.Confirmation.SerializeToString,
+            ),
+            'endExec': grpc.unary_unary_rpc_method_handler(
+                    servicer.endExec,
+                    request_deserializer=mpi__monitor__pb2.Empty.FromString,
                     response_serializer=mpi__monitor__pb2.Confirmation.SerializeToString,
             ),
     }
@@ -70,7 +138,7 @@ class Monitor(object):
     """
 
     @staticmethod
-    def SendResources(request,
+    def Scale(request,
             target,
             options=(),
             channel_credentials=None,
@@ -80,14 +148,14 @@ class Monitor(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/mpi_monitor.Monitor/SendResources',
-            mpi__monitor__pb2.availNodes.SerializeToString,
+        return grpc.experimental.unary_unary(request, target, '/mpi_monitor.Monitor/Scale',
+            mpi__monitor__pb2.additionalNodes.SerializeToString,
             mpi__monitor__pb2.Confirmation.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
 
     @staticmethod
-    def activeNode(request,
+    def RetrieveKeys(request,
             target,
             options=(),
             channel_credentials=None,
@@ -97,8 +165,76 @@ class Monitor(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/mpi_monitor.Monitor/activeNode',
+        return grpc.experimental.unary_unary(request, target, '/mpi_monitor.Monitor/RetrieveKeys',
             mpi__monitor__pb2.nodeName.SerializeToString,
+            mpi__monitor__pb2.SSHKeys.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def JobInit(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/mpi_monitor.Monitor/JobInit',
+            mpi__monitor__pb2.nodeName.SerializeToString,
+            mpi__monitor__pb2.Confirmation.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def activeServer(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/mpi_monitor.Monitor/activeServer',
+            mpi__monitor__pb2.Empty.SerializeToString,
+            mpi__monitor__pb2.Confirmation.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def checkpointing(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/mpi_monitor.Monitor/checkpointing',
+            mpi__monitor__pb2.Empty.SerializeToString,
+            mpi__monitor__pb2.Confirmation.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def endExec(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/mpi_monitor.Monitor/endExec',
+            mpi__monitor__pb2.Empty.SerializeToString,
             mpi__monitor__pb2.Confirmation.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

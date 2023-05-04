@@ -19,20 +19,23 @@ service Monitor {
 	rpc JobInit(nodeName) returns (Confirmation) {}
 
 	// This should be used for checking whether the master is alive
-	rpc activeServer() returns (Confirmation) {} 
+	rpc activeServer(Empty) returns (Confirmation) {} 
 
 	// This should be used for telling server that checkpointing is done
-	rpc checkpointing() returns (Confirmation) {} 
+	rpc checkpointing(Empty) returns (Confirmation) {} 
 
 	// This should be used for telling server that execution is over
-	rpc endExec() returns (Confirmation) {} 
+	rpc endExec(Empty) returns (Confirmation) {} 
+}
+
+message Empty {
 }
 
 message Scale {
 	int32 nodes = 1;
 }
 
-message availNodes {
+message additionalNodes {
 	int32 nodes = 1;
 }
 
