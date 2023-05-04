@@ -223,7 +223,7 @@ def main_worker(podname):
     # We send signal to server every minute so we know whether we should end or not the application
     end = 0
     while end == 0:
-        time.sleep(60)
+        time.sleep(180)
         end = check_activity()
 
     # Send a final message to server that we're shutting down the application now
