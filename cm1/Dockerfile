@@ -30,7 +30,7 @@ FROM debian:11-slim As prod
 RUN apt-get update && apt-get install -y gfortran openmpi-bin python3 git ssh time python3-pip
 RUN pip install grpcio grpcio-tools
 WORKDIR /home
-RUN cd /home && git clone http://github.com/raijenki/hpc-tests.git
+RUN cd /home && git clone http://github.com/raijenki/hpc-tests.git && cd hpc-tests/cm1 && python3 -m grpc_tools.protoc -I. --python_out=. --pyi_out=. --grpc_python_out=. mpi_monitor.proto
 COPY --from=base /home/cm1.exe /home/hpc-tests/cm1/.
 RUN mkdir -p /var/run/sshd;
 CMD /usr/sbin/sshd;

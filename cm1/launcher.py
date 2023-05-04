@@ -125,7 +125,8 @@ def wait_signal():
 def confirm_checkpoint():
     with grpc.insecure_channel('grpc-server.default:50051') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.SendResources(mpi_monitor_pb2.checkpointing()) 
+        response = stub.checkpointing() 
+        #response = stub.SendResources(mpi_monitor_pb2.checkpointing()) 
     return 0
 
 # Application-specific checkpointing
@@ -169,7 +170,7 @@ def start_mpi():
 def get_write_keys(hostip):
     with grpc.insecure_channel('grpc-server.default:50051') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.SendResources(mpi_monitor_pb2.RetrieveKeys(nodeName=hostip))
+        response = stub.RetrieveKeys(mpi_monitor_pb2.nodeName(nodeName=hostip))
         f = open("/root/.ssh/authorized_keys", "w")
         k = open("/root/.ssh/id_rsa.pub", "w")
         r = open("/root/.ssh/id_rsa", "w")
@@ -181,19 +182,19 @@ def get_write_keys(hostip):
 def end_exec():
     with grpc.insecure_channel('grpc-server.default:50051') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.SendResources(mpi_monitor_pb2.activeServer())
+        response = stub.activeServer()
     return 0  
 
 def nodeIsReady(podname):
     with grpc.insecure_channel('grpc-server.default:50051') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.SendResources(mpi_monitor_pb2.JobInit(nodeName=podname))
+        response = stub.JobInit(mpi_monitor_pb2.nodeName(nodeName=podname))
     return 0  
 
 def check_activity():
     with grpc.insecure_channel('grpc-server.default:50051') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.SendResources(mpi_monitor_pb2.activeServer())
+        response = stub.activeServer()
         if response.confirmId == 4:
             return 0 # Master is active
         if response.confirmId == 5:
