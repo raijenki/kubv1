@@ -231,7 +231,7 @@ def main_worker(podname):
         time.sleep(20)
         end = check_activity()
         with open("/root/hahaha.txt", "a") as f:
-            f.writelines(end)
+            f.writelines(str(end))
 
     # Send a final message to server that we're shutting down the application now
     end_exec()
