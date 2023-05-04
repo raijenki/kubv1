@@ -12,14 +12,20 @@ service Monitor {
 	// We order the server to scale (from: scheduler, to: MPIServer)
 	rpc Scale(additionalNodes) returns (Confirmation) {}
 
-	// We send the files for updating all our hosts (from: MPIServer, to: client)
+	// We send the files for updating all our hosts (from: scaled client, to: MPIServer)
 	rpc RetrieveKeys(nodeName) returns (SSHKeys) {}
 
 	// We tell that our auxiliary pods are ready to start the job
 	rpc JobInit(nodeName) returns (Confirmation) {}
 
 	// This should be used for checking whether the master is alive
-	rpc activeServer(nodeName) returns (Confirmation) {} 
+	rpc activeServer() returns (Confirmation) {} 
+
+	// This should be used for telling server that checkpointing is done
+	rpc checkpointing() returns (Confirmation) {} 
+
+	// This should be used for telling server that execution is over
+	rpc endExec() returns (Confirmation) {} 
 }
 
 message Scale {
@@ -41,5 +47,6 @@ message Confirmation {
 
 message SSHKeys {
 	string pubJobKey = 1;
+	string privJobKey = 2;
 	int32 confirmId = 3;
 }

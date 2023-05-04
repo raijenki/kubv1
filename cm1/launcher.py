@@ -2,6 +2,9 @@
 import time
 import signal
 import os
+import threading
+import re
+import fileinput
 import sys
 import time
 import subprocess
@@ -20,6 +23,11 @@ app_ssh = None
 MPI_HOST = None
 startedRanks = 0
 concludedRanks = 0
+totalRanks = 0
+global ended_exec
+chkPt = 0
+lock = threading.Lock()
+
 #MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host " +  str(MPI_HOST) + " -np 4 /home/hpc-tests/cm1/cm1.exe"
 WORKER_CMD = "/usr/sbin/sshd -D"
 
@@ -43,34 +51,57 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
     def Scale(self, request, context):
         global app
         global startedRanks
-        startedRanks = startedRanks + request.additionalNodes
-
+        global chkPt
+        global totalRanks
+        chkPt = 1
+        totalRanks = totalRanks + request.additionalNodes
+        
         # SIGTERM the app
         os.killpg(os.getpgid(app.pid), signal.SIGTERM)
+
         # Wait few seconds so app can deal with whatever it needs
-        count = 30
+        count = 20
         while count > 0:
             time.sleep(1)
             count -= 1
-        os.killpg(os.getpgid(app.pid), signal.SIGKILL) # Kill it
+        os.killpg(os.getpgid(app.pid), signal.SIGKILL) # Forcefully kill it
         app.wait() # Wait the app to be killed
-
-        checkpoint() # Checkpoint, applicantion-based
-        wait_signal()
-        start_mpi() # Restart our mpi job
+        checkpoint() # Server checkpoint, application-based
         return mpi_monitor_pb2.Confirmation(confirmMessage='All jobs are stopped, waiting for new replicas!', confirmId=1)
+
+    def checkpointing(self, request, context):
+        global chkPt
+        chkPt = 2
+        return mpi_monitor_pb2.Confirmation(confirmMessage='Checkpointing is confirmed by server!', confirmId=2)
 
     def JobInit(self, request, context):
         global startedRanks
-        startedRanks += 1
-        return mpi_monitor_pb2.Confirmation(confirmMessage='Job is confirmed as started!', confirmId=2)
+        with lock:
+            startedRanks += 1
+        return mpi_monitor_pb2.Confirmation(confirmMessage='Job is confirmed as started!', confirmId=3)
 
     def RetrieveKeys(self, request, context):
-        with open("/root/.ssh/authorized_keys", "r") as auth_keys:
-            key = auth_keys.readlines()
-        return mpi_monitor_pb2.SSHKeys(pubJobKey=key, confirmId=3)
+        with open("/root/.ssh/authorized_keys", "r") as pubkey_file:
+            pubkey = pubkey_file.readlines()
+        with open("/root/.ssh/id_rsa", "r") as privkey_file:
+            privkey = privkey_file.readlines()       
+        return mpi_monitor_pb2.SSHKeys(pubJobKey=pubkey, privJobKey=privkey, confirmId=3)
 
     def activeServer(self, request, context):
+        global chkPt
+        global ended_exec
+        if chkPt == 1:
+            return mpi_monitor_pb2.Confirmation(confirmMessage='Server is active, you need to checkpoint!', confirmId=5)
+        if ended_exec == 1:
+            return mpi_monitor_pb2.Confirmation(confirmMessage='Server is active, you need to checkpoint!', confirmId=6)
+        else:  
+            return mpi_monitor_pb2.Confirmation(confirmMessage='Server is active!', confirmId=4)
+
+    def endExec(self, request, context):
+        global concludedRanks
+        with lock:
+            concludedRanks += 1
+    	#This should be used for telling server that execution is over
         return mpi_monitor_pb2.Confirmation(confirmMessage='Server is active!', confirmId=4)
 
 def getNumberOfRanks():
@@ -86,11 +117,44 @@ def copyRanks():
 
 def wait_signal():
    # Wait all workers to send a message saying that they are active
-    while startedRanks != getNumberOfRanks():
+    global totalRanks
+    while startedRanks != totalRanks:
         time.sleep(20)
     return 0
 
+def confirm_checkpoint():
+    with grpc.insecure_channel('grpc-server.default:50051') as channel:
+        stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
+        response = stub.SendResources(mpi_monitor_pb2.checkpointing()) 
+    return 0
+
+# Application-specific checkpointing
 def checkpoint():
+    delimiters = ".", "_"
+    regex_pattern = "|".join(map(re.escape, delimiters))
+    f = open('/etc/hostname')
+    podname = f.read()
+    # For cm1, files are saved only on mpiworker-0
+    if "cm1-job-mpiworker-0" in podname:
+        chkpt_path = r'/home/hpc-tests/cm1/'
+        fileList = os.listdir(chkpt_path)
+        rstNo = 0
+        # Get all the files in the directory
+        for file in fileList:
+            if "cm1rst" in podname:
+                b = int(re.split(regex_pattern, file)[1])
+                if b > rstNo:
+                    rstNo = b
+        # Now modify the namelist.input
+        line_rstno = " irst     = " + str(rstNo) + "\n"
+        for line in fileinput.input("/home/hpc-tests/cm1/namelist.input", inplace=True):
+            if line.strip().startswith('irst'):
+                line = line_rstno
+            sys.stdout.write(line)
+        confirm_checkpoint()
+    # Nothing to do on master
+    if "master" in podname:
+        pass
     return 0
 
 def start_mpi():
@@ -102,23 +166,67 @@ def start_mpi():
     app = subprocess.Popen(shlex.split(MASTER_CMD), preexec_fn=os.setsid)
     return 0
 
+def get_write_keys(hostip):
+    with grpc.insecure_channel('grpc-server.default:50051') as channel:
+        stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
+        response = stub.SendResources(mpi_monitor_pb2.RetrieveKeys(nodeName=hostip))
+        f = open("/root/.ssh/authorized_keys", "w")
+        k = open("/root/.ssh/id_rsa.pub", "w")
+        r = open("/root/.ssh/id_rsa", "w")
+        f.writelines(response.pubJobKey)
+        k.writelines(response.pubJobKey)
+        r.writelines(response.privJobKey)
+        f.close(), k.close(), r.close()
+
+def end_exec():
+    with grpc.insecure_channel('grpc-server.default:50051') as channel:
+        stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
+        response = stub.SendResources(mpi_monitor_pb2.activeServer())
+    return 0  
+
+def nodeIsReady(podname):
+    with grpc.insecure_channel('grpc-server.default:50051') as channel:
+        stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
+        response = stub.SendResources(mpi_monitor_pb2.JobInit(nodeName=podname))
+    return 0  
+
+def check_activity():
+    with grpc.insecure_channel('grpc-server.default:50051') as channel:
+        stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
+        response = stub.SendResources(mpi_monitor_pb2.activeServer())
+        if response.confirmId == 4:
+            return 0 # Master is active
+        if response.confirmId == 5:
+            checkpoint() # Master is active but you need to checkpoint
+            return 0
+        else:
+            return 1 # Master is waiting to end execution
+
 def main_worker(podname):
     """Opening subprocesses"""
     global app
-    # kubectl get pod airflow-worker-0 --template '{{.status.podIP}}' -n airflow
-    if not "worker" in podname: # This means this is a node that was scaled
-        master_ip = os.env['IP']
-        with grpc.insecure_channel('grpc-server.default:50051') as channel:
-            stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-            nodename = open("/etc/hostname").readline()
-            response = stub.SendResources(mpi_monitor_pb2.RetrieveKeys(nodeName=nodename))
-            f = open("/root/.ssh/authorized_keys", "w")
-            f.writelines(response.SSHKey)
-        return 0
+    if "scale" in podname: # This means this is a node that was scaled
+        with open("/etc/hosts") as hostfile:
+            for line in hostfile:
+                pass
+            hostip = line.split(sep="/t")[0]
+            get_write_keys(hostip)
     
+    # Start sshd
     app = subprocess.Popen(shlex.split(WORKER_CMD), preexec_fn=os.setsid)
-    signal.signal(signal.SIGTERM, signal_handler)
-    app.wait()
+    # signal.signal(signal.SIGTERM, signal_handler)
+    # app.wait()
+    # Send that we are ready to start
+    nodeIsReady(podname)
+
+    # We send signal to server every minute so we know whether we should end or not the application
+    end = 0
+    while end == 0:
+        time.sleep(60)
+        end = check_activity()
+
+    # Send a final message to server that we're shutting down the application now
+    end_exec()
     print("Finish execution...")
     return 0
 
@@ -127,6 +235,8 @@ def main_master():
     global app
     global startedRanks
     global concludedRanks
+    global ended_exec
+    global totalRanks
     #global MPI_HOST
 
     app_ssh = subprocess.Popen("/usr/sbin/sshd", preexec_fn=os.setsid)
@@ -141,8 +251,9 @@ def main_master():
     
     # Avoid the locked /etc/volcano fs
     copyRanks()
+    totalRanks = getNumberOfRanks()
 
-    # Reuse the function that waits all pods to be active
+    # Reuse function so everyone can be online
     wait_signal()
 
     # Reuse the function to restart mpi
@@ -152,6 +263,13 @@ def main_master():
 
     # We wait application to be done    
     while concludedRanks != getNumberOfRanks():
+        poll = app.poll()
+        if poll is not None and chkPt is 0: # MPI app is not active and also we don't need to checkpoint here
+            ended_exec = 1 # Execution is over, now wait for all ranks to send message of conclusion
+        if poll is not None and chkPt is 2:
+            wait_signal()
+            chkPt = 0
+            start_mpi() # Restart our mpi job
         #print("Waiting")
         time.sleep(20)
 
