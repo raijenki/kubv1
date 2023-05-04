@@ -125,7 +125,7 @@ def wait_signal():
 def confirm_checkpoint():
     with grpc.insecure_channel('grpc-server.default:50051') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.checkpointing() 
+        response = stub.checkpointing((mpi_monitor_pb2.Dummy22(mtest="hello"))) 
         #response = stub.SendResources(mpi_monitor_pb2.checkpointing()) 
     return 0
 
@@ -182,19 +182,19 @@ def get_write_keys(hostip):
 def end_exec():
     with grpc.insecure_channel('grpc-server.default:50051') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.activeServer()
+        response = stub.activeServer(mpi_monitor_pb2.Dummy22(mtest="hello"))
     return 0  
 
 def nodeIsReady(podname):
     with grpc.insecure_channel('grpc-server.default:50051') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.JobInit(mpi_monitor_pb2.nodeName(nodeName=podname))
+        response = stub.JobInit(mpi_monitor_pb2.Dummy22(mtest="hello"))
     return 0  
 
 def check_activity():
     with grpc.insecure_channel('grpc-server.default:50051') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.activeServer()
+        response = stub.activeServer(mpi_monitor_pb2.Dummy22(mtest="hello"))
         if response.confirmId == 4:
             return 0 # Master is active
         if response.confirmId == 5:
