@@ -277,6 +277,7 @@ def main_master():
     #app.wait()
     #server.wait_for_termination()
     print("Finishing execution...")
+    return 0
 
 if __name__ == "__main__":
     """Defines whether we should follow the master or work router"""
