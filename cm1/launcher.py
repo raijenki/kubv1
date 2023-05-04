@@ -85,6 +85,10 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
             pubkey = pubkey_file.readlines()
         with open("/root/.ssh/id_rsa", "r") as privkey_file:
             privkey = privkey_file.readlines()       
+        # Append hostip to mpiworker.host
+        ssh_hosts = open("/root/mpiworker.host", 'a')
+        ssh_hosts.write("\n" + request.nodeName)
+        ssh_hosts.close()
         return mpi_monitor_pb2.SSHKeys(pubJobKey=pubkey, privJobKey=privkey, confirmId=3)
 
     def activeServer(self, request, context):
@@ -223,7 +227,7 @@ def main_worker(podname):
     # We send signal to server every minute so we know whether we should end or not the application
     end = 0
     while end == 0:
-        time.sleep(180)
+        time.sleep(60)
         end = check_activity()
 
     # Send a final message to server that we're shutting down the application now
@@ -264,15 +268,19 @@ def main_master():
 
     # We wait application to be done    
     while concludedRanks != getNumberOfRanks():
-        poll = app.poll()
-        if poll != None and chkPt == 0: # MPI app is not active and also we don't need to checkpoint here
+        if app.poll() == None:
+            with open("/root/hahaha.txt", "w") as f:
+                f.writelines("HAHAHAHAHAHA\n")
+            time.sleep(20)
+        elif app.poll() != None and chkPt == 0: # MPI app is not active and also we don't need to checkpoint here
+            with open("/root/hahaha.txt", "w") as f:
+                f.writelines("HEHEHEHEHEHE\n")
             ended_exec = 1 # Execution is over, now wait for all ranks to send message of conclusion
-        if poll != None and chkPt == 2:
+        elif app.poll() != None and chkPt == 2:
             wait_signal()
             chkPt = 0
             start_mpi() # Restart our mpi job
         #print("Waiting")
-        time.sleep(20)
 
     #app.wait()
     #server.wait_for_termination()
