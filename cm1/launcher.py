@@ -24,7 +24,7 @@ MPI_HOST = None
 startedRanks = 0
 concludedRanks = 0
 totalRanks = 0
-global ended_exec
+ended_exec = 0
 chkPt = 0
 lock = threading.Lock()
 
@@ -222,6 +222,7 @@ def main_worker(podname):
     # signal.signal(signal.SIGTERM, signal_handler)
     # app.wait()
     # Send that we are ready to start
+    time.sleep(10)
     nodeIsReady(podname)
 
     # We send signal to server every minute so we know whether we should end or not the application
