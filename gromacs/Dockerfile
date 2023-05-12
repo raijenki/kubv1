@@ -1,5 +1,5 @@
 FROM ubuntu:22.04
-RUN /bin/sh -c set -xe \ 
+RUN /bin/bash -c set -xe \ 
     && echo '#!/bin/sh' > /usr/sbin/policy-rc.d \
     && echo 'exit 101' >> /usr/sbin/policy-rc.d \
     && chmod +x /usr/sbin/policy-rc.d \
@@ -16,11 +16,14 @@ RUN /bin/sh -c set -xe \
 RUN rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /run/systemd && echo 'docker' > /run/systemd/container
 RUN  apt-get update --fix-missing \
-     && apt-get install -y git wget cmake\
+     && apt-get install -y git wget cmake zip unzip \
      && apt-get install -y build-essential gfortran libopenmpi-dev \
      && apt-get install -y ssh time python3
 RUN cd /home/ && wget ftp://ftp.gromacs.org/gromacs/gromacs-2023.tar.gz \
-    && tar xvf gromacs-2023 && cd gromacs-2023 \
+    && tar xvf gromacs-2023.tar.gz && cd gromacs-2023 \
     && mkdir build && cd build \
-    && cmake .. -DGMX_BUILD_OWN_FFTW=ON -DREGRESSIONTEST_DOWNLOAD=ON -DGMX_MPI=ON && make && make install \
-    source /usr/local/gromacs/bin/GMXRC
+    && cmake .. -DGMX_BUILD_OWN_FFTW=ON -DREGRESSIONTEST_DOWNLOAD=ON -DGMX_MPI=ON && make && make install
+RUN cd /home/ && wget https://www.mpinat.mpg.de/benchMEM && unzip benchMEM
+WORKDIR /home
+SHELL ["/bin/bash", "-l", "-c"]
+RUN cat /usr/local/gromacs/bin/GMXRC.bash > /root/.bashrc
