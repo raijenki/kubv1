@@ -195,7 +195,7 @@ def get_write_keys(hostip):
 def end_exec():
     with grpc.insecure_channel('grpc-server.default:50051') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.activeServer(mpi_monitor_pb2.Dummy22(mtest="hello"))
+        response = stub.endExec(mpi_monitor_pb2.Dummy22(mtest="hello"))
     return 0  
 
 def nodeIsReady(podname):
@@ -298,7 +298,7 @@ def main_master():
             stdout_app, stderr_app = app.communicate()
         if not mpiexec_exists and chkPt == 0: # MPI app is not active and also we don't need to checkpoint here
             with open("/data/hahaha.txt", "a") as f:
-                f.writelines("Finishhhh\n")
+                f.writelines(concludedRanks)
             ended_exec = 1 # Execution is over, now wait for all ranks to send message of conclusion
         if not mpiexec_exists and chkPt == 2:
             wait_signal()
