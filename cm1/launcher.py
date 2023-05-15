@@ -204,10 +204,15 @@ def nodeIsReady(podname):
         response = stub.JobInit(mpi_monitor_pb2.Dummy22(mtest="hello"))
     return 0  
 
-def check_activity():
+def check_activity(code):
     with grpc.insecure_channel('grpc-server.default:50051') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.activeServer(mpi_monitor_pb2.Dummy22(mtest="hello"))
+
+        if code == 0:
+            response = stub.activeServer(mpi_monitor_pb2.Dummy22(mtest="orted"))
+        else:
+            response = stub.activeServer(mpi_monitor_pb2.Dummy22(mtest="active"))
+
         if response.confirmId == 4:
             return 0 # Master is active
         if response.confirmId == 5:
@@ -238,13 +243,7 @@ def main_worker(podname):
     end = 0
     while end == 0:
         time.sleep(20)
-        #orted_active = check_process_exists("orted")
-        #if not orted_active:
-        #    pass
-        #else:
-            #end = check_activity()
         end = check_activity()
-
     # Send a final message to server that we're shutting down the application now
     end_exec()
     print("Finish execution...")
@@ -261,7 +260,7 @@ def main_master():
     global totalRanks
     #global MPI_HOST
 
-    app_ssh = subprocess.Popen("/usr/sbin/sshd", start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    app_ssh = subprocess.Popen("/usr/sbin/sshd", start_new_session=True)
     #time.sleep(30) # Ensure all workers will be spawned first
 
     port = '50051'
@@ -280,8 +279,22 @@ def main_master():
 
     # Reuse the function to restart mpi
     start_mpi()
-
+    notdone = 0
     print("Application started!")
+
+
+    # while notdone == 0:
+    #     if concludedRanks == getNumberOfRanks():
+    #         with open("/data/hahaha.txt", "a") as f:
+    #             f.writelines("KKKK\n")
+    #         if chkPt == 0: # MPI app is not active and also we don't need to checkpoint here
+    #             ended_exec = 1 # Execution is over, now wait for all ranks to send message of conclusion
+    #         if chkPt == 2:
+    #             wait_signal()
+    #             chkPt = 0
+    #             concludedRanks = 0
+    #             start_mpi()
+    #     time.sleep(20)
 
     # We wait application to be done    
     while concludedRanks != getNumberOfRanks():
