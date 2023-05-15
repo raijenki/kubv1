@@ -22,7 +22,7 @@ spec:
           volumes:
           - name: task-pv-storage
             persistentVolumeClaim:
-            claimName: task-pv-claim
+              claimName: task-pv-claim
           containers:
             - command: ["/usr/bin/python3", "hpc-tests/cm1/launcher.py"]
               image: raijenki/mpik8s:cm1
