@@ -177,7 +177,7 @@ def start_mpi():
     os.environ["MPI_HOST"] = MPI_HOST
     MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " /home/hpc-tests/cm1/cm1.exe"
     #app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    app = subprocess.Popen(shlex.split(MASTER_CMD), preexec_fn=os.setsid)
     return 0
 
 def get_write_keys(hostip):
@@ -227,7 +227,7 @@ def main_worker(podname):
             get_write_keys(hostip)
     
     # Start sshd
-    app = subprocess.Popen(shlex.split(WORKER_CMD), start_new_session=True)
+    app = subprocess.Popen(shlex.split(WORKER_CMD), preexec_fn=os.setsid)
     # signal.signal(signal.SIGTERM, signal_handler)
     # app.wait()
     # Send that we are ready to start
@@ -255,7 +255,7 @@ def main_master():
     global totalRanks
     #global MPI_HOST
 
-    app_ssh = subprocess.Popen("/usr/sbin/sshd", start_new_session=True)
+    app_ssh = subprocess.Popen("/usr/sbin/sshd", preexec_fn=os.setsid)
     #time.sleep(30) # Ensure all workers will be spawned first
 
     port = '50051'
