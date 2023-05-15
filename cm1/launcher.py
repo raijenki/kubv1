@@ -168,7 +168,8 @@ def start_mpi():
     MPI_HOST = ','.join(line.strip() for line in ssh_hosts)
     os.environ["MPI_HOST"] = MPI_HOST
     MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " /home/hpc-tests/cm1/cm1.exe"
-    app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=10)
+    #app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    app = subprocess.Popen(shlex.split(MASTER_CMD), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return 0
 
 def get_write_keys(hostip):
