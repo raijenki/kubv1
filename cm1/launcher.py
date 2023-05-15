@@ -110,6 +110,7 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
             f.writelines("msgmsg\n")
         with lock:
             concludedRanks += 1
+            
         if concludedRanks == getNumberOfRanks():
             notdone = 1
     	#This should be used for telling server that execution is over

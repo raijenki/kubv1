@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: sched
+spec:
+  manualSelector: true
+  selector:
+    matchLabels:
+      app: sched
+  backoffLimit: 2
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: sched
+    spec:
+      serviceAccountName: scaler-dft
+      volumes:
+        - name: task-pv-storage
+          persistentVolumeClaim:
+            claimName: task-pv-claim
+      containers:
+      - name: stream
+        image: raijenki/mpik8s:cm1
+        imagePullPolicy: Always
+        volumeMounts:
+          - mountPath: /data
+            name: task-pv-storage
+        command: ["/usr/bin/python3", "scheduler.py"]
+        args: ["2000"]
+        resources:
+          requests:
+            cpu: 14
+            memory: "4000Mi"
+        env:
+          - name: OMP_NUM_THREADS
+            valueFrom:
+              resourceFieldRef:
+                containerName: stream
+                resource: requests.cpu
+      restartPolicy: OnFailure
