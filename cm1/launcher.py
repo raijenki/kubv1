@@ -294,13 +294,8 @@ def main_master():
     while concludedRanks != getNumberOfRanks():
         mpiexec_exists = check_process_exists("mpiexec")
         if mpiexec_exists:
-            with open("/data/hahaha.txt", "a") as f:
-                f.writelines("aaa")
             stdout_app, stderr_app = app.communicate()
-            stdout_ssh, stderr_ssh = app_ssh.communicate()
         if not mpiexec_exists and chkPt == 0: # MPI app is not active and also we don't need to checkpoint here
-            with open("/data/hehehe.txt", "a") as f:
-                f.writelines("aaa")
             ended_exec = 1 # Execution is over, now wait for all ranks to send message of conclusion
         if not mpiexec_exists and chkPt == 2:
             wait_signal()
