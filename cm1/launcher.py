@@ -177,7 +177,7 @@ def start_mpi():
     os.environ["MPI_HOST"] = MPI_HOST
     MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " /home/hpc-tests/cm1/cm1.exe"
     #app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    app = subprocess.Popen(shlex.split(MASTER_CMD), preexec_fn=os.setsid)
+    app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True)
     return 0
 
 def get_write_keys(hostip):
@@ -227,7 +227,7 @@ def main_worker(podname):
             get_write_keys(hostip)
     
     # Start sshd
-    app = subprocess.Popen(shlex.split(WORKER_CMD), preexec_fn=os.setsid)
+    app = subprocess.Popen(shlex.split(WORKER_CMD), start_new_session=True)
     # signal.signal(signal.SIGTERM, signal_handler)
     # app.wait()
     # Send that we are ready to start
@@ -255,7 +255,7 @@ def main_master():
     global totalRanks
     #global MPI_HOST
 
-    app_ssh = subprocess.Popen("/usr/sbin/sshd", preexec_fn=os.setsid)
+    app_ssh = subprocess.Popen("/usr/sbin/sshd", start_new_session=True)
     #time.sleep(30) # Ensure all workers will be spawned first
 
     port = '50051'
@@ -274,7 +274,6 @@ def main_master():
 
     # Reuse the function to restart mpi
     start_mpi()
-    notdone = 0
     print("Application started!")
 
 
@@ -291,7 +290,8 @@ def main_master():
     #             start_mpi()
     #     time.sleep(20)
 
-    # We wait application to be done    
+    # We wait application to be done 
+    time.sleep(20)
     while concludedRanks != getNumberOfRanks():
         mpiexec_exists = check_process_exists("mpiexec")
         if mpiexec_exists:
@@ -302,7 +302,7 @@ def main_master():
             with open("/data/hehehe.txt", "a") as f:
                 f.writelines(concludedRanks)
             ended_exec = 1 # Execution is over, now wait for all ranks to send message of conclusion
-        elif not mpiexec_exists != None and chkPt == 2:
+        elif not mpiexec_exists and chkPt == 2:
             wait_signal()
             chkPt = 0
             start_mpi() # Restart our mpi job
