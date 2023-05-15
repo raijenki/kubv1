@@ -204,15 +204,10 @@ def nodeIsReady(podname):
         response = stub.JobInit(mpi_monitor_pb2.Dummy22(mtest="hello"))
     return 0  
 
-def check_activity(code):
+def check_activity():
     with grpc.insecure_channel('grpc-server.default:50051') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-
-        if code == 0:
-            response = stub.activeServer(mpi_monitor_pb2.Dummy22(mtest="orted"))
-        else:
-            response = stub.activeServer(mpi_monitor_pb2.Dummy22(mtest="active"))
-
+        response = stub.activeServer(mpi_monitor_pb2.Dummy22(mtest="orted"))
         if response.confirmId == 4:
             return 0 # Master is active
         if response.confirmId == 5:
