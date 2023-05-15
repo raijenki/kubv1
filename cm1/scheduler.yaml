@@ -26,16 +26,6 @@ spec:
         volumeMounts:
           - mountPath: /data
             name: task-pv-storage
-        command: ["/usr/bin/python3", "scheduler.py"]
+        command: ["sleep", "3600"]
         args: ["2000"]
-        resources:
-          requests:
-            cpu: 14
-            memory: "4000Mi"
-        env:
-          - name: OMP_NUM_THREADS
-            valueFrom:
-              resourceFieldRef:
-                containerName: stream
-                resource: requests.cpu
       restartPolicy: OnFailure
