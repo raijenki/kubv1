@@ -19,11 +19,18 @@ spec:
           labels:
             app.kubernetes.io/name: grpc-server
         spec:
+          volumes:
+          - name: task-pv-storage
+            persistentVolumeClaim:
+            claimName: task-pv-claim
           containers:
             - command: ["/usr/bin/python3", "hpc-tests/cm1/launcher.py"]
               image: raijenki/mpik8s:cm1
               imagePullPolicy: Always
               name: mpimaster
+              volumeMounts:
+              - mountPath: /data
+                name: task-pv-storage
               ports:
                 - containerPort: 22
                   name: mpijob-port

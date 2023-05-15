@@ -8,6 +8,7 @@ import fileinput
 import sys
 import time
 import subprocess
+import psutil
 import shlex
 import shutil
 from concurrent import futures
@@ -126,6 +127,13 @@ def wait_signal():
         time.sleep(20)
     return 0
 
+# Check whether process orted exists
+def check_process_exists(process_name):
+    for proc in psutil.process_iter(['name']):
+        if proc.info['name'].startswith(process_name):
+            return True
+    return False
+
 def confirm_checkpoint():
     with grpc.insecure_channel('grpc-server.default:50051') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
@@ -169,7 +177,7 @@ def start_mpi():
     os.environ["MPI_HOST"] = MPI_HOST
     MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " /home/hpc-tests/cm1/cm1.exe"
     #app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    app = subprocess.Popen(shlex.split(MASTER_CMD), shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return 0
 
 def get_write_keys(hostip):
@@ -219,7 +227,7 @@ def main_worker(podname):
             get_write_keys(hostip)
     
     # Start sshd
-    app = subprocess.Popen(shlex.split(WORKER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    app = subprocess.Popen(shlex.split(WORKER_CMD), start_new_session=True)
     # signal.signal(signal.SIGTERM, signal_handler)
     # app.wait()
     # Send that we are ready to start
@@ -230,14 +238,19 @@ def main_worker(podname):
     end = 0
     while end == 0:
         time.sleep(20)
+        #orted_active = check_process_exists("orted")
+        #if not orted_active:
+        #    pass
+        #else:
+            #end = check_activity()
         end = check_activity()
-        with open("/root/hahaha.txt", "a") as f:
-            f.writelines(str(end))
 
     # Send a final message to server that we're shutting down the application now
     end_exec()
     print("Finish execution...")
     return 0
+
+    
 
 def main_master():
     """Opening subprocesses"""
@@ -273,11 +286,11 @@ def main_master():
     # We wait application to be done    
     while concludedRanks != getNumberOfRanks():
         if app.poll() == None:
-            with open("/root/hahaha.txt", "a") as f:
+            with open("/data/hahaha.txt", "a") as f:
                 f.writelines("HAHAHAHAHAHA\n")
             time.sleep(20)
         elif app.poll() != None and chkPt == 0: # MPI app is not active and also we don't need to checkpoint here
-            with open("/root/hahaha.txt", "a") as f:
+            with open("/data/hahaha.txt", "a") as f:
                 f.writelines("HEHEHEHEHEHE\n")
             ended_exec = 1 # Execution is over, now wait for all ranks to send message of conclusion
         elif app.poll() != None and chkPt == 2:
