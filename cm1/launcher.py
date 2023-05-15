@@ -276,7 +276,7 @@ def main_master():
     # Reuse the function to restart mpi
     start_mpi()
     print("Application started!")
-
+    concludedRanks = 0
 
     # while notdone == 0:
     #     if concludedRanks == getNumberOfRanks():
