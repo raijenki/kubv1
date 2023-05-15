@@ -252,6 +252,7 @@ def main_master():
     global startedRanks
     global concludedRanks
     global ended_exec
+    global chkPt
     global totalRanks
     #global MPI_HOST
 
@@ -296,12 +297,15 @@ def main_master():
         if mpiexec_exists:
             stdout_app, stderr_app = app.communicate()
         if not mpiexec_exists and chkPt == 0: # MPI app is not active and also we don't need to checkpoint here
+            with open("/data/hahaha.txt", "a") as f:
+                f.writelines("Finishhhh\n")
             ended_exec = 1 # Execution is over, now wait for all ranks to send message of conclusion
         if not mpiexec_exists and chkPt == 2:
             wait_signal()
             chkPt = 0
             start_mpi() # Restart our mpi job
           #print("Waiting")
+        time.sleep(10)
 
     #app.wait()
     #server.wait_for_termination()
