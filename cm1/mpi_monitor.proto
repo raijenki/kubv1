@@ -33,7 +33,7 @@ message Dummy22 {
 }
 
 message Scale {
-	int32 nodes = 1;
+	string nodes = 1;
 }
 
 message additionalNodes {
