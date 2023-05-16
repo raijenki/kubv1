@@ -7,7 +7,7 @@ spec:
   schedulerName: volcano
   plugins:
     ssh: []
-    svc: []
+    svc: ["--disable-network-policy=true"]
   tasks:
     - replicas: 1
       name: mpimaster
@@ -61,5 +61,6 @@ spec:
     app.kubernetes.io/name: grpc-server
   ports:
     - protocol: TCP
-      port: 50051
-      targetPort: 50051
+      port: 30173
+      targetPort: 30173
+      nodePort: 30173
