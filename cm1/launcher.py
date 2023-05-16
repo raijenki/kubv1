@@ -59,7 +59,7 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         totalRanks = totalRanks + request.nodes
         
         # SIGTERM the app
-        os.killpg(os.getpgid(app.pid), signal.SIGTERM)
+        #os.killpg(os.getpgid(app.pid), signal.SIGTERM)
         with open("/data/app.txt", "a") as f:
             f.writelines("AAA\n")
         # Wait few seconds so app can deal with whatever it needs
