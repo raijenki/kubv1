@@ -1,13 +1,21 @@
 import logging
-import argparse
 import uuid
+import grpc
+import time
+import mpi_monitor_pb2
+import mpi_monitor_pb2_grpc
 
 from kubernetes import client
 from kubernetes import config
 
-logging.basicConfig(level=logging.INFO)
-config.load_kube_config()
+total_clients = 0
 
+logging.basicConfig(level=logging.INFO)
+config.load_incluster_config()
+
+PVC_NAME = 'task-pv-claim'
+MOUNT_PATH = '/data'
+VOLUME_KEY  = 'volume-kctl'
 
 class Kubernetes:
     def __init__(self):
@@ -16,33 +24,20 @@ class Kubernetes:
         self.core_api = client.CoreV1Api()
         self.batch_api = client.BatchV1Api()
 
-    def create_namespace(self, namespace):
-
-        namespaces = self.core_api.list_namespace()
-        all_namespaces = []
-        for ns in namespaces.items:
-            all_namespaces.append(ns.metadata.name)
-
-        if namespace in all_namespaces:
-            logging.info(f"Namespace {namespace} already exists. Reusing.")
-        else:
-            namespace_metadata = client.V1ObjectMeta(name=namespace)
-            self.core_api.create_namespace(
-                client.V1Namespace(metadata=namespace_metadata)
-            )
-            logging.info(f"Created namespace {namespace}.")
-
-        return namespace
-
     @staticmethod
-    def create_container(image, name, pull_policy, args):
+    def create_container(image, name, pull_policy):
+        volume = client.V1Volume(
+            name=VOLUME_KEY,
+            persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name=PVC_NAME),
+        )
+        volume_mount = client.V1VolumeMount(mount_path=MOUNT_PATH, name=VOLUME_KEY)
 
         container = client.V1Container(
             image=image,
             name=name,
             image_pull_policy=pull_policy,
-            args=[args],
-            command=["/bin/sleep", "7200"],
+            volume_mounts=[volume_mount],
+            command=["/usr/bin/python3", "hpc-tests/cm1/launcher.py"],
         )
 
         logging.info(
@@ -74,39 +69,39 @@ class Kubernetes:
 
         return job
 
-if __name__ == "__main__":
-
-    parser = argparse.ArgumentParser("Task Executor")
-    parser.add_argument("input_string", help="Input String", type=str)
-    args = parser.parse_args()
-
+def create_additional_pod():
     job_id = uuid.uuid4()
     pod_id = job_id
-
-    """ Steps 1 to 3 is the equivalent of the ./manifestfiles/shuffler_job.yaml """
 
     # Kubernetes instance
     k8s = Kubernetes()
 
     # STEP1: CREATE A CONTAINER
     _image = "raijenki/mpik8s:cm1"
-    _name = "shuffler"
-    _pull_policy = "Never"
+    _name = "scheduler"
+    _pull_policy = "Always"
 
-    shuffler_container = k8s.create_container(_image, _name, _pull_policy, args.input_string)
+    shuffler_container = k8s.create_container(_image, _name, _pull_policy)
 
     # STEP2: CREATE A POD TEMPLATE SPEC
-    _pod_name = f"my-job-pod-{pod_id}"
+    _pod_name = f"cm1-job-scale-{pod_id}"
     _pod_spec = k8s.create_pod_template(_pod_name, shuffler_container)
 
     # STEP3: CREATE A JOB
-    _job_name = f"my-job-{job_id}"
+    _job_name = f"cm1-job-scale-{job_id}"
     _job = k8s.create_job(_job_name, _pod_spec)
 
-    # STEP4: CREATE NAMESPACE
-    _namespace = "jobdemonamespace"
-    k8s.create_namespace(_namespace)
-
-    # STEP5: EXECUTE THE JOB
+    # STEP4: EXECUTE THE JOB
     batch_api = client.BatchV1Api()
-    batch_api.create_namespaced_job(_namespace, _job)
+    batch_api.create_namespaced_job("default", _job)
+
+def scheduler():
+    time.sleep(30)
+    with grpc.insecure_channel('grpc-server.default:50051') as channel:
+        stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
+        response = stub.Scale((mpi_monitor_pb2.additionalNodes(nodes=1))) 
+    create_additional_pod()
+    return 0
+
+if __name__ == "__main__":
+    scheduler()
