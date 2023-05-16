@@ -1,6 +1,7 @@
 import logging
 import uuid
 import grpc
+import time
 import mpi_monitor_pb2
 import mpi_monitor_pb2_grpc
 
@@ -36,7 +37,7 @@ class Kubernetes:
             name=name,
             image_pull_policy=pull_policy,
             volume_mounts=[volume_mount],
-            command=["/bin/sleep", "7200"],
+            command=["/usr/bin/python3", "hpc-tests/cm1/launcher.py"],
         )
 
         logging.info(
@@ -77,8 +78,8 @@ def create_additional_pod():
 
     # STEP1: CREATE A CONTAINER
     _image = "raijenki/mpik8s:cm1"
-    _name = "shuffler"
-    _pull_policy = "Never"
+    _name = "scheduler"
+    _pull_policy = "Always"
 
     shuffler_container = k8s.create_container(_image, _name, _pull_policy)
 
@@ -87,12 +88,20 @@ def create_additional_pod():
     _pod_spec = k8s.create_pod_template(_pod_name, shuffler_container)
 
     # STEP3: CREATE A JOB
-    _job_name = f"my-job-{job_id}"
+    _job_name = f"cm1-job-scale-{job_id}"
     _job = k8s.create_job(_job_name, _pod_spec)
 
     # STEP4: EXECUTE THE JOB
     batch_api = client.BatchV1Api()
     batch_api.create_namespaced_job("default", _job)
 
+def scheduler():
+    time.sleep(30)
+    with grpc.insecure_channel('grpc-server.default:50051') as channel:
+        stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
+        response = stub.Scale((mpi_monitor_pb2.additionalNodes(nodes=1))) 
+    create_additional_pod()
+    return 0
+
 if __name__ == "__main__":
-    pass
+    scheduler()

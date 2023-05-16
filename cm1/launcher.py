@@ -110,7 +110,7 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
             f.writelines("msgmsg\n")
         with lock:
             concludedRanks += 1
-            
+
         if concludedRanks == getNumberOfRanks():
             notdone = 1
     	#This should be used for telling server that execution is over
@@ -142,10 +142,7 @@ def check_process_exists(process_name):
     return False
 
 def confirm_checkpoint():
-    with grpc.insecure_channel('grpc-server.default:50051') as channel:
-        stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.checkpointing((mpi_monitor_pb2.Dummy22(mtest="hello"))) 
-        #response = stub.SendResources(mpi_monitor_pb2.checkpointing()) 
+         #response = stub.SendResources(mpi_monitor_pb2.checkpointing()) 
     return 0
 
 # Application-specific checkpointing
