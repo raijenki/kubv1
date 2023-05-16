@@ -15,7 +15,7 @@ config.load_incluster_config()
 
 PVC_NAME = 'task-pv-claim'
 MOUNT_PATH = '/data'
-VOLUME_KEY  = 'volume-kctl'
+VOLUME_KEY  = 'task-pv-storage'
 
 class Kubernetes:
     def __init__(self):
@@ -26,10 +26,6 @@ class Kubernetes:
 
     @staticmethod
     def create_container(image, name, pull_policy):
-        volume = client.V1Volume(
-            name=VOLUME_KEY,
-            persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name=PVC_NAME),
-        )
         volume_mount = client.V1VolumeMount(mount_path=MOUNT_PATH, name=VOLUME_KEY)
 
         container = client.V1Container(
@@ -49,8 +45,12 @@ class Kubernetes:
 
     @staticmethod
     def create_pod_template(pod_name, container):
+        volume = client.V1Volume(
+            name=VOLUME_KEY,
+            persistent_volume_claim=client.V1PersistentVolumeClaimVolumeSource(claim_name=PVC_NAME),
+        )
         pod_template = client.V1PodTemplateSpec(
-            spec=client.V1PodSpec(restart_policy="Never", containers=[container]),
+            spec=client.V1PodSpec(restart_policy="Never", containers=[container], volumes=[volume]),
             metadata=client.V1ObjectMeta(name=pod_name, labels={"pod_name": pod_name}),
         )
 
