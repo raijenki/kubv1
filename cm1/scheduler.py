@@ -95,12 +95,14 @@ def create_additional_pod():
     batch_api = client.BatchV1Api()
     batch_api.create_namespaced_job("default", _job)
     print("pod created")
-    
+
 def scheduler():
     time.sleep(30)
-    with grpc.insecure_channel('grpc-server.default:30173') as channel:
+    with grpc.insecure_channel('grpc-server.default:30173', options=[
+    ('grpc.keepalive_time_ms', 40000),
+    ('grpc.keepalive_timeout_ms', 40000),]) as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.Scale((mpi_monitor_pb2.additionalNodes(nodes="1"))) 
+        response = stub.Scale((mpi_monitor_pb2.additionalNodes(nodes=1))) 
         print(response)
     create_additional_pod()
     return 0

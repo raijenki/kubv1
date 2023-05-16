@@ -33,7 +33,7 @@ message Dummy22 {
 }
 
 message additionalNodes {
-	string nodes = 1;
+	int32 nodes = 1;
 }
 
 message nodeName {
