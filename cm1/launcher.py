@@ -60,13 +60,16 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         
         # SIGTERM the app
         os.killpg(os.getpgid(app.pid), signal.SIGTERM)
-
+        with open("/data/app.txt", "a") as f:
+            f.writelines("AAA\n")
         # Wait few seconds so app can deal with whatever it needs
-        count = 20
+        count = 5
         while count > 0:
             time.sleep(1)
             count -= 1
         os.killpg(os.getpgid(app.pid), signal.SIGKILL) # Forcefully kill it
+        with open("/data/chk.txt", "a") as f:
+            f.writelines("BBB\n")
         app.wait() # Wait the app to be killed
         checkpoint() # Server checkpoint, application-based
         return mpi_monitor_pb2.Confirmation(confirmMessage='All jobs are stopped, waiting for new replicas!', confirmId=1)
@@ -153,6 +156,8 @@ def checkpoint():
     podname = f.read()
     # For cm1, files are saved only on mpiworker-0
     if "cm1-job-mpiworker-0" in podname:
+        with open("/data/chk.txt", "a") as f:
+            f.writelines("KKKK\n")
         chkpt_path = r'/home/hpc-tests/cm1/'
         fileList = os.listdir(chkpt_path)
         rstNo = 0
