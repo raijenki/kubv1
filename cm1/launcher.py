@@ -185,7 +185,7 @@ def start_mpi():
     return 0
 
 def get_write_keys(hostip):
-    with grpc.insecure_channel('grpc-server.default:50051') as channel:
+    with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
         response = stub.RetrieveKeys(mpi_monitor_pb2.nodeName(nodeName=hostip))
         f = open("/root/.ssh/authorized_keys", "w")
@@ -197,19 +197,19 @@ def get_write_keys(hostip):
         f.close(), k.close(), r.close()
 
 def end_exec():
-    with grpc.insecure_channel('grpc-server.default:50051') as channel:
+    with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
         response = stub.endExec(mpi_monitor_pb2.Dummy22(mtest="hello"))
     return 0  
 
 def nodeIsReady(podname):
-    with grpc.insecure_channel('grpc-server.default:50051') as channel:
+    with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
         response = stub.JobInit(mpi_monitor_pb2.Dummy22(mtest="hello"))
     return 0  
 
 def check_activity():
-    with grpc.insecure_channel('grpc-server.default:50051') as channel:
+    with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
         response = stub.activeServer(mpi_monitor_pb2.Dummy22(mtest="orted"))
         if response.confirmId == 4:
@@ -261,8 +261,8 @@ def main_master():
 
     app_ssh = subprocess.Popen("/usr/sbin/sshd", start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     #time.sleep(30) # Ensure all workers will be spawned first
-
-    port = '50051'
+    port = '30173'
+    #port = '50051'
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     mpi_monitor_pb2_grpc.add_MonitorServicer_to_server(Monitor(), server)
     server.add_insecure_port('[::]:' + port)

@@ -26,6 +26,6 @@ spec:
         volumeMounts:
           - mountPath: /data
             name: task-pv-storage
-        command: ["/usr/bin/python3", "hpc-tests/scheduler.py"]
+        command: ["/usr/bin/python3", "hpc-tests/cm1/scheduler.py"]
         args: ["2000"]
       restartPolicy: OnFailure
