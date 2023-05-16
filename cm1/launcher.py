@@ -56,7 +56,7 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         global chkPt
         global totalRanks
         chkPt = 1
-        totalRanks = totalRanks + request.additionalNodes
+        totalRanks = totalRanks + request.nodes
         
         # SIGTERM the app
         os.killpg(os.getpgid(app.pid), signal.SIGTERM)

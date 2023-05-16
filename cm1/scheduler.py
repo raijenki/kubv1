@@ -102,7 +102,7 @@ def scheduler():
     ('grpc.keepalive_time_ms', 40000),
     ('grpc.keepalive_timeout_ms', 40000),]) as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.Scale((mpi_monitor_pb2.additionalNodes(nodes=1))) 
+        response = stub.Scale(mpi_monitor_pb2.additionalNodes(nodes=1))
         print(response)
     create_additional_pod()
     return 0
