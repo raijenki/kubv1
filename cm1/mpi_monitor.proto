@@ -32,12 +32,8 @@ message Dummy22 {
 	string mtest = 1;
 }
 
-message Scale {
-	string nodes = 1;
-}
-
 message additionalNodes {
-	int32 nodes = 1;
+	string nodes = 1;
 }
 
 message nodeName {
