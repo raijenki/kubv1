@@ -79,8 +79,6 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         global startedRanks
         with lock:
             startedRanks += 1
-        with open("/data/app4.txt", "a+") as f:
-            f.writelines(request.nodeIP)  
         return mpi_monitor_pb2.Confirmation(confirmMessage='Job is confirmed as started!', confirmId=3)
 
     def RetrieveKeys(self, request, context):
@@ -106,11 +104,8 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
     def endExec(self, request, context):
         global concludedRanks
         global notdone
-        with open("/data/hahaha.txt", "w+") as f:
-            f.writelines("msgmsg\n")
         with lock:
             concludedRanks += 1
-
         if concludedRanks == getNumberOfRanks():
             notdone = 1
     	#This should be used for telling server that execution is over
@@ -136,8 +131,6 @@ def wait_signal():
     global chkPt
     while getStartedRanks() != getNumberOfRanks():
         time.sleep(5)
-        with open("/data/chkpt.txt", "a+") as f:
-                f.write(str(getStartedRanks()) + "," + str(getNumberOfRanks()) + str(chkPt) + "\n" )
     return 0
 
 # Check whether process orted exists
