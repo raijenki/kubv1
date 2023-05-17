@@ -58,12 +58,13 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         chkPt = 1
         totalRanks = totalRanks + request.nodes
         
+        
         # SIGTERM the app
         os.killpg(os.getpgid(app.pid), signal.SIGTERM)
         # Wait few seconds so app can deal with whatever it needs
         count = 5
         time.sleep(count)
-        os.killpg(os.getpgid(app.pid), signal.SIGKILL) # Forcefully kill it
+        #os.killpg(os.getpgid(app.pid), signal.SIGKILL) # Forcefully kill it
         #app.wait() # Wait the app to be killed
         checkpoint() # Server checkpoint, application-based
         return mpi_monitor_pb2.Confirmation(confirmMessage='All jobs are stopped, waiting for new replicas!', confirmId=1)
