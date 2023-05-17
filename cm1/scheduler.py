@@ -71,7 +71,7 @@ class Kubernetes:
 
 def create_additional_pod():
     job_id = uuid.uuid4()
-    pod_id = job_id
+    pod_id = 0 #job_id
 
     # Kubernetes instance
     k8s = Kubernetes()

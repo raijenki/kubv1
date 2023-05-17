@@ -37,7 +37,7 @@ message additionalNodes {
 }
 
 message nodeName {
-	string nodeName = 1;
+	string nodeIP = 1;
 }
 
 message Confirmation {

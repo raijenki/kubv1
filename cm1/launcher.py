@@ -61,13 +61,9 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         # SIGTERM the app
         os.killpg(os.getpgid(app.pid), signal.SIGTERM)
         # Wait few seconds so app can deal with whatever it needs
-        count = 30
-        while count > 0:
-            time.sleep(1)
-            count -= 1
+        count = 5
+        time.sleep(count)
         os.killpg(os.getpgid(app.pid), signal.SIGKILL) # Forcefully kill it
-        with open("/data/chk.txt", "a") as f:
-            f.writelines("BBB\n")
         app.wait() # Wait the app to be killed
         checkpoint() # Server checkpoint, application-based
         return mpi_monitor_pb2.Confirmation(confirmMessage='All jobs are stopped, waiting for new replicas!', confirmId=1)
@@ -84,13 +80,13 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         return mpi_monitor_pb2.Confirmation(confirmMessage='Job is confirmed as started!', confirmId=3)
 
     def RetrieveKeys(self, request, context):
-        pubkey = open("/root/.ssh/authorized_keys", "r").readlines()
-        privkey = open("/root/.ssh/id_rsa", "r").readlines()
+        pubkey = open("/root/.ssh/authorized_keys", "r").read()
+        privkey = open("/root/.ssh/id_rsa", "r").read()
         with open("/data/app2.txt", "a") as f:
             f.writelines(pubkey + "\n" + privkey)   
         # Append hostip to mpiworker.host
         ssh_hosts = open("/root/mpiworker.host", 'a')
-        ssh_hosts.write("\n" + request.nodeName)
+        ssh_hosts.write("\n" + str(request.nodeIP))
         ssh_hosts.close()
         return mpi_monitor_pb2.SSHKeys(pubJobKey=pubkey, privJobKey=privkey, confirmId=3)
 
@@ -154,7 +150,7 @@ def checkpoint():
     podname = f.read()
     # For cm1, files are saved only on mpiworker-0
     if "cm1-job-mpiworker-0" in podname:
-        with open("/data/chk.txt", "a") as f:
+        with open("/data/ccc.txt", "a") as f:
             f.writelines("KKKK\n")
         chkpt_path = r'/home/hpc-tests/cm1/'
         fileList = os.listdir(chkpt_path)
@@ -190,7 +186,7 @@ def start_mpi():
 def get_write_keys(hostip):
     with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.RetrieveKeys(mpi_monitor_pb2.nodeName(nodeName=hostip))
+        response = stub.RetrieveKeys(mpi_monitor_pb2.nodeName(nodeIP=hostip))
         f = open("/root/.ssh/authorized_keys", "w")
         k = open("/root/.ssh/id_rsa.pub", "w")
         r = open("/root/.ssh/id_rsa", "w")
@@ -209,7 +205,7 @@ def end_exec():
 def nodeIsReady(podname):
     with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.JobInit(mpi_monitor_pb2.Dummy22(mtest="hello"))
+        response = stub.JobInit(mpi_monitor_pb2.nodeName(nodeIP="hello"))
     return 0  
 
 def check_activity():
@@ -234,7 +230,7 @@ def main_worker(podname):
             hostip = line.split(sep="/t")[0]
             with open("/data/kkk.txt") as ff:
                 ff.write(hostip)
-            get_write_keys(hostip)
+            get_write_keys(str(hostip))
     
     # Start sshd
     app = subprocess.Popen(shlex.split(WORKER_CMD), start_new_session=True)
