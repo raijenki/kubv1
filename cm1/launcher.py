@@ -135,10 +135,9 @@ def wait_signal():
    # Wait all workers to send a message saying that they are active
     global chkPt
     while getStartedRanks() != getNumberOfRanks():
-        time.sleep(20)
-        if chkPt == 2:
-            with open("/data/chkpt.txt", "a+") as f:
-                f.write(getStartedRanks() + "," + getNumberOfRanks() + "\n")
+        time.sleep(5)
+        with open("/data/chkpt.txt", "a+") as f:
+                f.write(getStartedRanks() + "," + getNumberOfRanks() + str(chkPt) + "\n" )
     return 0
 
 # Check whether process orted exists
