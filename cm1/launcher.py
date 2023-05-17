@@ -125,10 +125,13 @@ def copyRanks():
     shutil.copyfile(original, target)
     return 0
 
+def getStartedRanks():
+    global startedRanks
+    return startedRanks
+
 def wait_signal():
    # Wait all workers to send a message saying that they are active
-    global totalRanks
-    while startedRanks != totalRanks:
+    while getStartedRanks() != getNumberOfRanks():
         time.sleep(20)
     return 0
 
