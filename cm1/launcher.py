@@ -56,7 +56,8 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         global chkPt
         global totalRanks
         chkPt = 1
-        totalRanks = totalRanks + request.nodes
+        with lock:
+            totalRanks = totalRanks + request.nodes
         
         
         # SIGTERM the app
@@ -78,16 +79,18 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         global startedRanks
         with lock:
             startedRanks += 1
+        with open("/data/app4.txt", "a+") as f:
+            f.writelines(request.nodeIP)  
         return mpi_monitor_pb2.Confirmation(confirmMessage='Job is confirmed as started!', confirmId=3)
 
     def RetrieveKeys(self, request, context):
         pubkey = open("/root/.ssh/authorized_keys", "r").read()
         privkey = open("/root/.ssh/id_rsa", "r").read()
-        with open("/data/app2.txt", "w+") as f:
-            f.writelines(pubkey + "\n" + privkey)   
+        with open("/data/app3.txt", "w+") as f:
+            f.writelines(request.nodeIP)   
         # Append hostip to mpiworker.host
-        ssh_hosts = open("/root/mpiworker.host", 'a')
-        ssh_hosts.write("\n" + str(request.nodeIP))
+        ssh_hosts = open("/root/mpiworker.host", 'a+')
+        ssh_hosts.write("\n" + request.nodeIP)
         ssh_hosts.close()
         return mpi_monitor_pb2.SSHKeys(pubJobKey=pubkey, privJobKey=privkey, confirmId=3)
 
@@ -210,7 +213,7 @@ def end_exec():
 def nodeIsReady(podname):
     with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.JobInit(mpi_monitor_pb2.nodeName(nodeIP="hello"))
+        response = stub.JobInit(mpi_monitor_pb2.nodeName(nodeIP=podname))
     return 0  
 
 def check_activity():
