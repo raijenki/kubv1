@@ -23,9 +23,9 @@ spec:
       - name: stream
         image: raijenki/mpik8s:cm1
         imagePullPolicy: Always
-        command: ["/bin/sleep", "7200"]
+          #command: ["/bin/sleep", "7200"]
         volumeMounts:
           - mountPath: /data
             name: task-pv-storage
-        #command: ["/usr/bin/python3", "hpc-tests/cm1/scheduler.py"]
+        command: ["/usr/bin/python3", "hpc-tests/cm1/scheduler.py"]
       restartPolicy: OnFailure

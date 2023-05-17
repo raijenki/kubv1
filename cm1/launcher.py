@@ -59,11 +59,9 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         totalRanks = totalRanks + request.nodes
         
         # SIGTERM the app
-        #os.killpg(os.getpgid(app.pid), signal.SIGTERM)
-        with open("/data/app.txt", "a") as f:
-            f.writelines("AAA\n")
+        os.killpg(os.getpgid(app.pid), signal.SIGTERM)
         # Wait few seconds so app can deal with whatever it needs
-        count = 5
+        count = 30
         while count > 0:
             time.sleep(1)
             count -= 1
@@ -86,10 +84,10 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         return mpi_monitor_pb2.Confirmation(confirmMessage='Job is confirmed as started!', confirmId=3)
 
     def RetrieveKeys(self, request, context):
-        with open("/root/.ssh/authorized_keys", "r") as pubkey_file:
-            pubkey = pubkey_file.readlines()
-        with open("/root/.ssh/id_rsa", "r") as privkey_file:
-            privkey = privkey_file.readlines()       
+        pubkey = open("/root/.ssh/authorized_keys", "r").readlines()
+        privkey = open("/root/.ssh/id_rsa", "r").readlines()
+        with open("/data/app2.txt", "a") as f:
+            f.writelines(pubkey + "\n" + privkey)   
         # Append hostip to mpiworker.host
         ssh_hosts = open("/root/mpiworker.host", 'a')
         ssh_hosts.write("\n" + request.nodeName)
@@ -200,6 +198,7 @@ def get_write_keys(hostip):
         k.writelines(response.pubJobKey)
         r.writelines(response.privJobKey)
         f.close(), k.close(), r.close()
+    return 0
 
 def end_exec():
     with grpc.insecure_channel('grpc-server.default:30173') as channel:
@@ -233,6 +232,8 @@ def main_worker(podname):
             for line in hostfile:
                 pass
             hostip = line.split(sep="/t")[0]
+            with open("/data/kkk.txt") as ff:
+                ff.write(hostip)
             get_write_keys(hostip)
     
     # Start sshd
