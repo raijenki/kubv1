@@ -68,6 +68,7 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         #os.killpg(os.getpgid(app.pid), signal.SIGKILL) # Forcefully kill it
         #app.wait() # Wait the app to be killed
         checkpoint() # Server checkpoint, application-based
+        wait_checkpt()
         return mpi_monitor_pb2.Confirmation(confirmMessage='All jobs are stopped, waiting for new replicas!', confirmId=1)
 
     def checkpointing(self, request, context):
@@ -148,7 +149,9 @@ def check_process_exists(process_name):
     return False
 
 def confirm_checkpoint():
-         #response = stub.SendResources(mpi_monitor_pb2.checkpointing()) 
+    with grpc.insecure_channel('grpc-server.default:30173') as channel:
+         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
+         response = stub.checkpointing(mpi_monitor_pb2.Dummy22(mtest="hello")) 
     return 0
 
 # Application-specific checkpointing
