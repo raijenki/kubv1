@@ -49,7 +49,7 @@ spec:
                 - containerPort: 22
                   name: mpijob-port
               workingDir: /home
-          restartPolicy: OnFailure
+          restartPolicy: Never
 ---
 apiVersion: v1
 kind: Service

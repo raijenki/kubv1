@@ -82,7 +82,7 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
     def RetrieveKeys(self, request, context):
         pubkey = open("/root/.ssh/authorized_keys", "r").read()
         privkey = open("/root/.ssh/id_rsa", "r").read()
-        with open("/data/app2.txt", "a") as f:
+        with open("/data/app2.txt", "w+") as f:
             f.writelines(pubkey + "\n" + privkey)   
         # Append hostip to mpiworker.host
         ssh_hosts = open("/root/mpiworker.host", 'a')
@@ -103,7 +103,7 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
     def endExec(self, request, context):
         global concludedRanks
         global notdone
-        with open("/data/hahaha.txt", "a") as f:
+        with open("/data/hahaha.txt", "w+") as f:
             f.writelines("msgmsg\n")
         with lock:
             concludedRanks += 1
@@ -147,22 +147,20 @@ def checkpoint():
     delimiters = ".", "_"
     regex_pattern = "|".join(map(re.escape, delimiters))
     f = open('/etc/hostname')
-    podname = f.read()
+    podname = f.read().rstrip('\n')
     # For cm1, files are saved only on mpiworker-0
-    if "cm1-job-mpiworker-0" in podname:
-        with open("/data/ccc.txt", "a") as f:
-            f.writelines("KKKK\n")
+    if "mpiworker-0" in podname:
         chkpt_path = r'/home/hpc-tests/cm1/'
         fileList = os.listdir(chkpt_path)
         rstNo = 0
         # Get all the files in the directory
         for file in fileList:
-            if "cm1rst" in podname:
+            if "cm1rst" in file:
                 b = int(re.split(regex_pattern, file)[1])
                 if b > rstNo:
                     rstNo = b
         # Now modify the namelist.input
-        line_rstno = " irst     = " + str(rstNo) + "\n"
+        line_rstno = " irst      = " + str(rstNo) + ",\n"
         for line in fileinput.input("/home/hpc-tests/cm1/namelist.input", inplace=True):
             if line.strip().startswith('irst'):
                 line = line_rstno
@@ -224,13 +222,8 @@ def main_worker(podname):
     """Opening subprocesses"""
     global app
     if "scale" in podname: # This means this is a node that was scaled
-        with open("/etc/hosts") as hostfile:
-            for line in hostfile:
-                pass
-            hostip = line.split(sep="/t")[0]
-            with open("/data/kkk.txt") as ff:
-                ff.write(hostip)
-            get_write_keys(str(hostip))
+        hostip = open("/etc/hosts").readlines()[-1].split(sep="\t")[0]
+        get_write_keys(hostip)
     
     # Start sshd
     app = subprocess.Popen(shlex.split(WORKER_CMD), start_new_session=True)
@@ -318,7 +311,7 @@ def main_master():
 if __name__ == "__main__":
     """Defines whether we should follow the master or work router"""
     f = open('/etc/hostname')
-    podname = f.read()
+    podname = f.read().rstrip('\n')
     if "master" in podname:
         main_master()
     else:

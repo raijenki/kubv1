@@ -28,4 +28,4 @@ spec:
           - mountPath: /data
             name: task-pv-storage
         command: ["/usr/bin/python3", "hpc-tests/cm1/scheduler.py"]
-      restartPolicy: OnFailure
+      restartPolicy: Never
