@@ -137,7 +137,7 @@ def wait_signal():
     while getStartedRanks() != getNumberOfRanks():
         time.sleep(5)
         with open("/data/chkpt.txt", "a+") as f:
-                f.write(getStartedRanks() + "," + getNumberOfRanks() + str(chkPt) + "\n" )
+                f.write(str(getStartedRanks()) + "," + str(getNumberOfRanks()) + str(chkPt) + "\n" )
     return 0
 
 # Check whether process orted exists
