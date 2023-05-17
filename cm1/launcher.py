@@ -86,8 +86,7 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
     def RetrieveKeys(self, request, context):
         pubkey = open("/root/.ssh/authorized_keys", "r").read()
         privkey = open("/root/.ssh/id_rsa", "r").read()
-        with open("/data/app3.txt", "w+") as f:
-            f.writelines(request.nodeIP)   
+
         # Append hostip to mpiworker.host
         ssh_hosts = open("/root/mpiworker.host", 'a+')
         ssh_hosts.write("\n" + request.nodeIP)
@@ -100,7 +99,7 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         if chkPt == 1:
             return mpi_monitor_pb2.Confirmation(confirmMessage='Server is active, you need to checkpoint!', confirmId=5)
         if ended_exec == 1:
-            return mpi_monitor_pb2.Confirmation(confirmMessage='Server is active, you need to checkpoint!', confirmId=6)
+            return mpi_monitor_pb2.Confirmation(confirmMessage='Server is active, you need to end execution!', confirmId=6)
         else:  
             return mpi_monitor_pb2.Confirmation(confirmMessage='Server is active!', confirmId=4)
 
@@ -134,8 +133,12 @@ def getStartedRanks():
 
 def wait_signal():
    # Wait all workers to send a message saying that they are active
+    global chkPt
     while getStartedRanks() != getNumberOfRanks():
         time.sleep(20)
+        if chkPt == 2:
+            with open("/data/chkpt.txt", "a+") as f:
+                f.write(getStartedRanks() + "," + getNumberOfRanks() + "\n")
     return 0
 
 # Check whether process orted exists
@@ -285,19 +288,6 @@ def main_master():
     start_mpi()
     print("Application started!")
     concludedRanks = 0
-
-    # while notdone == 0:
-    #     if concludedRanks == getNumberOfRanks():
-    #         with open("/data/hahaha.txt", "a") as f:
-    #             f.writelines("KKKK\n")
-    #         if chkPt == 0: # MPI app is not active and also we don't need to checkpoint here
-    #             ended_exec = 1 # Execution is over, now wait for all ranks to send message of conclusion
-    #         if chkPt == 2:
-    #             wait_signal()
-    #             chkPt = 0
-    #             concludedRanks = 0
-    #             start_mpi()
-    #     time.sleep(20)
 
     # We wait application to be done 
     while notdone == 0:
