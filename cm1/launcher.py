@@ -186,9 +186,12 @@ def get_write_keys(hostip):
     with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
         response = stub.RetrieveKeys(mpi_monitor_pb2.nodeName(nodeIP=hostip))
-        f = open("/root/.ssh/authorized_keys", "w")
-        k = open("/root/.ssh/id_rsa.pub", "w")
-        r = open("/root/.ssh/id_rsa", "w")
+        path = "/root/.ssh/"
+        if not os.path.exists(path):
+            os.makedirs(path)
+        f = open("/root/.ssh/authorized_keys", "w+")
+        k = open("/root/.ssh/id_rsa.pub", "w+")
+        r = open("/root/.ssh/id_rsa", "w+")
         f.writelines(response.pubJobKey)
         k.writelines(response.pubJobKey)
         r.writelines(response.privJobKey)
