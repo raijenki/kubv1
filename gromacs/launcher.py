@@ -63,7 +63,7 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         # SIGTERM the app
         os.killpg(os.getpgid(app.pid), signal.SIGTERM)
         # Wait few seconds so app can deal with whatever it needs
-        count = 5
+        count = 15
         time.sleep(count)
         #os.killpg(os.getpgid(app.pid), signal.SIGKILL) # Forcefully kill it
         #app.wait() # Wait the app to be killed
@@ -239,7 +239,7 @@ def main_worker(podname):
     # signal.signal(signal.SIGTERM, signal_handler)
     # app.wait()
     # Send that we are ready to start
-    time.sleep(10)
+    time.sleep(20)
     nodeIsReady(podname)
 
     # We send signal to server every minute so we know whether we should end or not the application
