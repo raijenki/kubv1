@@ -1,4 +1,4 @@
-kubectl delete -f cm1.yaml
+kubectl delete -f gromacs.yaml
 git add .
 git commit -m "mpi_host"
 git push
