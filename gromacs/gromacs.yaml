@@ -1,13 +1,13 @@
 apiVersion: batch.volcano.sh/v1alpha1
 kind: Job
 metadata:
-  name: gmx-job
+  name: cm1-job
 spec:
-  minAvailable: 5
+  minAvailable: 4
   schedulerName: volcano
   plugins:
     ssh: []
-    svc: []
+    svc: ["--disable-network-policy=true"]
   tasks:
     - replicas: 1
       name: mpimaster
@@ -15,33 +15,33 @@ spec:
         - event: TaskCompleted
           action: CompleteJob
       template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: grpc-server
         spec:
+          volumes:
+          - name: task-pv-storage
+            persistentVolumeClaim:
+              claimName: task-pv-claim
           containers:
-            - command:
-                - /bin/bash 
-                - -c
-                - |
-                  MPI_HOST=`cat /etc/volcano/mpiworker.host | tr "\n" ","`;
-                  mkdir -p /var/run/sshd; /usr/sbin/sshd;
-                  mpiexec --allow-run-as-root -wdir /home --host ${MPI_HOST} -np 5 gmx_mpi mdrun -s benchMEM.tpr -ntomp 1 -cpi state.cpt;
+            - command: ["/usr/bin/python3", "hpc-tests/gromacs/launcher.py"]
               image: raijenki/mpik8s:gromacs
               imagePullPolicy: Always
               name: mpimaster
+              volumeMounts:
+              - mountPath: /data
+                name: task-pv-storage
               ports:
                 - containerPort: 22
                   name: mpijob-port
               workingDir: /home
-          restartPolicy: OnFailure
-    - replicas: 5
+          restartPolicy: Never
+    - replicas: 3
       name: mpiworker
       template:
         spec:
           containers:
-            - command:
-                - /bin/sh
-                - -c
-                - |
-                  mkdir -p /var/run/sshd; /usr/sbin/sshd -D;
+            - command: ["/usr/bin/python3", "hpc-tests/gromacs/launcher.py"]
               image: raijenki/mpik8s:gromacs
               imagePullPolicy: Always
               name: mpiworker
@@ -49,5 +49,18 @@ spec:
                 - containerPort: 22
                   name: mpijob-port
               workingDir: /home
-          restartPolicy: OnFailure
+          restartPolicy: Never
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grpc-server
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: grpc-server
+  ports:
+    - protocol: TCP
+      port: 30173
+      targetPort: 30173
+      nodePort: 30173
