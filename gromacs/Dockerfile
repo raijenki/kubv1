@@ -30,3 +30,5 @@ RUN cd /home/hpc-tests/gromacs/ && wget https://www.mpinat.mpg.de/benchMEM && un
 WORKDIR /home
 SHELL ["/bin/bash", "-l", "-c"]
 RUN cat /usr/local/gromacs/bin/GMXRC.bash > /root/.bashrc
+RUN mkdir -p /var/run/sshd;
+CMD /usr/sbin/sshd;
