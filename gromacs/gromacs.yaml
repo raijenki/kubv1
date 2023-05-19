@@ -1,7 +1,7 @@
 apiVersion: batch.volcano.sh/v1alpha1
 kind: Job
 metadata:
-  name: cm1-job
+  name: gromacs-job
 spec:
   minAvailable: 4
   schedulerName: volcano

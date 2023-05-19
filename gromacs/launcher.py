@@ -180,7 +180,7 @@ def start_mpi():
     ssh_hosts = open("/root/mpiworker.host")
     MPI_HOST = ','.join(line.strip() for line in ssh_hosts)
     os.environ["MPI_HOST"] = MPI_HOST
-    MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " gmx_mpi mdrun -s benchMEM.tpr -ntomp 1 -cpi state.cpt"
+    MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/gromacs/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " gmx_mpi mdrun -s benchMEM.tpr -ntomp 1 -cpi state.cpt"
     #app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return 0
