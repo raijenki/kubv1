@@ -23,6 +23,7 @@ RUN cd /home/ && wget ftp://ftp.gromacs.org/gromacs/gromacs-2023.tar.gz \
     && tar xvf gromacs-2023.tar.gz && cd gromacs-2023 \
     && mkdir build && cd build \
     && cmake .. -DGMX_BUILD_OWN_FFTW=ON -DREGRESSIONTEST_DOWNLOAD=ON -DGMX_MPI=ON && make && make install
+RUN cd /home/ && git clone git@github.com:raijenki/hpc-tests.git
 RUN cd /home/ && wget https://www.mpinat.mpg.de/benchMEM && unzip benchMEM
 WORKDIR /home
 SHELL ["/bin/bash", "-l", "-c"]
