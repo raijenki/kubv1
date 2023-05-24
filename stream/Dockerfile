@@ -1,4 +1,4 @@
-FROM debian:11-slim As base
+FROM debian:11 As base
 RUN /bin/sh -c set -xe \ 
     && echo '#!/bin/sh' > /usr/sbin/policy-rc.d \
     && echo 'exit 101' >> /usr/sbin/policy-rc.d \
@@ -27,6 +27,7 @@ RUN cd /home && git clone https://github.com/raijenki/hpc-tests.git \
     && cd hpc-tests/stream \
     && make
 
+FROM debian:11-slim As prod
 RUN apt-get update && apt-get install -y glibc-source libgomp1 python3 python3-pip git time
 RUN pip install grpcio grpcio-tools psutil kubernetes
 RUN cd /home && git clone http://github.com/raijenki/hpc-tests.git && cd hpc-tests/stream && python3 -m grpc_tools.protoc -I. --python_out=. --pyi_out=. --grpc_python_out=. mpi_monitor.proto

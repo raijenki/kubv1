@@ -62,7 +62,7 @@ def main():
     server.start()
     print("Server started, listening on " + port)
 
-    stream = subprocess.Popen(["/home/stream_c"] + sys.argv[1:], preexec_fn=os.setsid)
+    stream = subprocess.Popen(["/home/hpc-tests/stream/stream_c"] + sys.argv[1:], preexec_fn=os.setsid)
     
     while stream.poll() is None:
         time.sleep(10)

@@ -25,8 +25,7 @@ spec:
         volumeMounts:
           - mountPath: /data
             name: task-pv-storage
-        command: ["/usr/bin/python3", "/home/hpc-tests/stream/launcher.py"]
-        args: ["1500"]
+        command: ["/home/hpc-tests/stream/stream_c", "1500"]
         resources:
           requests:
             cpu: 8
