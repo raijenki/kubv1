@@ -100,7 +100,7 @@ def scheduler():
     time.sleep(30)
     with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.Scale(mpi_monitor_pb2.additionalNodes(nodes=1))
+        response = stub.Scale(mpi_monitor_pb2.additionalNodes(nodes=1, mode='hpa'))
         print(response)
     create_additional_pod()
     return 0

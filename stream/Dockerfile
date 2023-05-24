@@ -1,4 +1,4 @@
-FROM debian:11 As base
+FROM debian:11-slim As base
 RUN /bin/sh -c set -xe \ 
     && echo '#!/bin/sh' > /usr/sbin/policy-rc.d \
     && echo 'exit 101' >> /usr/sbin/policy-rc.d \
@@ -16,7 +16,6 @@ RUN /bin/sh -c set -xe \
 RUN rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /run/systemd && echo 'docker' > /run/systemd/container
 RUN  apt-get update --fix-missing \
-     && apt-get install -y libopenmpi-dev openmpi-bin \
      && apt-get install -y git \
      && apt-get install -y build-essential \
      && apt-get install -y cmake \
@@ -28,9 +27,10 @@ RUN cd /home && git clone https://github.com/raijenki/hpc-tests.git \
     && cd hpc-tests/stream \
     && make
 
-FROM debian:11-slim As prod
-RUN apt-get update && apt-get install -y glibc-source libgomp1 python3
+RUN apt-get update && apt-get install -y glibc-source libgomp1 python3 python3-pip git time
+RUN pip install grpcio grpcio-tools psutil kubernetes
+RUN cd /home && git clone http://github.com/raijenki/hpc-tests.git && cd hpc-tests/stream && python3 -m grpc_tools.protoc -I. --python_out=. --pyi_out=. --grpc_python_out=. mpi_monitor.proto
+COPY --from=base /home/hpc-tests/stream/stream_c /home/hpc-tests/stream/stream_c
+RUN chmod +x /home/hpc-tests/stream/stream_c
 WORKDIR /home
-COPY --from=base /home/hpc-tests/stream/stream_c .
-COPY --from=base /home/hpc-tests/stream/launcher.py .
-RUN chmod +x stream_c
+
