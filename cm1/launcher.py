@@ -17,6 +17,9 @@ import logging
 import grpc
 import mpi_monitor_pb2
 import mpi_monitor_pb2_grpc
+from grpc_health.v1 import health
+from grpc_health.v1 import health_pb2
+from grpc_health.v1 import health_pb2_grpc
 
 STOP_TIMEOUT = 20
 app = None
@@ -58,7 +61,6 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         chkPt = 1
         with lock:
             totalRanks = totalRanks + request.nodes
-        
         
         # SIGTERM the app
         os.killpg(os.getpgid(app.pid), signal.SIGTERM)
@@ -213,6 +215,11 @@ def nodeIsReady(podname):
         response = stub.JobInit(mpi_monitor_pb2.nodeName(nodeIP=podname))
     return 0  
 
+def check_server_health():
+    request = health_pb2_grpc.HealthCheckRequest(service='') 
+    response = health_pb2_grpc.health_stub.Check(request)
+    return response.status == health_pb2_grpc.HealthCheckResponse.SERVING
+
 def check_activity():
     with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
@@ -238,16 +245,20 @@ def main_worker(podname):
     # app.wait()
 
     # This make sures that the server is online before we start the application
-    time.sleep(3)
+    with grpc.insecure_channel('grpc-server.default:30173') as channel:
+        health_stub = health_pb2_grpc.HealthStub(channel)
+        while not check_server_health():
+            time.sleep(1)
 
-    # Send that we are ready to start
+    # Server's up, we send signal
     nodeIsReady(podname)
 
-    # We send signal to server every minute so we know whether we should end or not the application
+    # We send signal to server every few seconds so we know whether we should end or not the application
     end = 0
     while end == 0:
         time.sleep(10)
         end = check_activity()
+        
     # Send a final message to server that we're shutting down the application now
     end_exec()
     print("Finish execution...")
@@ -270,6 +281,8 @@ def main_master():
     #port = '50051'
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     mpi_monitor_pb2_grpc.add_MonitorServicer_to_server(Monitor(), server)
+    health_pb2_grpc.add_HealthServicer_to_server(health.HealthServicer(), server)
+    
     server.add_insecure_port('[::]:' + port)
     server.start()
     print("Server started, listening on " + port)
