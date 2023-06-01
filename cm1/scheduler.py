@@ -155,4 +155,5 @@ def scheduler(num_pods):
     return 0
 
 if __name__ == "__main__":
-    scheduler(sys.argv[1])
+    print(sys.argv[1])
+    scheduler(int(sys.argv[1]))
