@@ -217,6 +217,9 @@ def create_channel():
     except grpc.FutureTimeoutError:
         print("Server not yet available, retrying...")
         raise
+    except grpc.RpcError:
+        print("Error connecting to the server, retrying...")
+        raise
 
 def nodeIsReady(podname):
     channel = create_channel()
