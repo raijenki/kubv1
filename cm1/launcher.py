@@ -239,7 +239,7 @@ def check_activity():
             return 1 # Master is waiting to end execution
 
 def check_health():
-    with grpc.insecure_channel('localhost:50051') as channel:
+    with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = health_pb2_grpc.HealthStub(channel)
         response = stub.Check(health_pb2.HealthCheckRequest())
         return response.status == health_pb2.HealthCheckResponse.SERVING
