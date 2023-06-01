@@ -12,10 +12,10 @@ from kubernetes import config, watch
 total_clients = 0
 
 logging.basicConfig(level=logging.INFO)
-#config.load_incluster_config()
+config.load_incluster_config()
 
 # Use this one for local testing
-config.load_kube_config()
+#config.load_kube_config()
 
 PVC_NAME = 'task-pv-claim'
 MOUNT_PATH = '/data'
