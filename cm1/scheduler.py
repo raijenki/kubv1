@@ -12,10 +12,10 @@ from kubernetes import config, watch
 total_clients = 0
 
 logging.basicConfig(level=logging.INFO)
-config.load_incluster_config()
+#config.load_incluster_config()
 
 # Use this one for local testing
-#config.load_kube_config()
+config.load_kube_config()
 
 PVC_NAME = 'task-pv-claim'
 MOUNT_PATH = '/data'
@@ -37,8 +37,8 @@ class Kubernetes:
             name=name,
             image_pull_policy=pull_policy,
             volume_mounts=[volume_mount],
-            args=["sleep", "5"]
-            #command=["/usr/bin/python3", "hpc-tests/cm1/launcher.py"],
+            #args=["sleep", "5"]
+            command=["/usr/bin/python3", "hpc-tests/cm1/launcher.py"],
         )
 
         logging.info(
@@ -150,7 +150,7 @@ def scheduler(num_pods):
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
         response = stub.Scale(mpi_monitor_pb2.additionalNodes(nodes=int(num_pods), mode='hpa'))
         print(response)
-    create_additional_pods(num_pods, _job_name)
+    create_additional_pods(int(num_pods), _job_name)
     monitor_job_completion(_job_name)
     return 0
 
