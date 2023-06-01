@@ -148,7 +148,7 @@ def scheduler(num_pods):
     _job_name = f"cm1-job-scale-{job_id}"
     with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-        response = stub.Scale(mpi_monitor_pb2.additionalNodes(nodes=num_pods, mode='hpa'))
+        response = stub.Scale(mpi_monitor_pb2.additionalNodes(nodes=int(num_pods), mode='hpa'))
         print(response)
     create_additional_pods(num_pods, _job_name)
     monitor_job_completion(_job_name)
