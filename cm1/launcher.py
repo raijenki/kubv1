@@ -17,9 +17,7 @@ import logging
 import grpc
 import mpi_monitor_pb2
 import mpi_monitor_pb2_grpc
-from grpc_health.v1 import health
-from grpc_health.v1 import health_pb2
-from grpc_health.v1 import health_pb2_grpc
+from grpc_health.v1 import health_pb2, health_pb2_grpc
 
 STOP_TIMEOUT = 20
 app = None
@@ -48,9 +46,22 @@ def signal_handler(sig, _frame):
         time.sleep(1)
         count -= 1
     print('Finished cleanup...')
-#
+##############
 # This deals with gRPC protocols
-#
+##############
+class HealthServicer(health_pb2_grpc.HealthServicer):
+    def __init__(self):
+        self.status = health_pb2.HealthCheckResponse.SERVING
+
+    def Check(self, request, context):
+        response = health_pb2.HealthCheckResponse()
+        response.status = self.status
+        return response
+
+    def set_health_status(self, status):
+        self.status = status
+
+
 class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
     # This is to react according to how scheduler sends the scaling message to us
     def Scale(self, request, context):
@@ -215,11 +226,6 @@ def nodeIsReady(podname):
         response = stub.JobInit(mpi_monitor_pb2.nodeName(nodeIP=podname))
     return 0  
 
-def check_server_health():
-    request = health_pb2_grpc.HealthCheckRequest(service='') 
-    response = health_pb2_grpc.health_stub.Check(request)
-    return response.status == health_pb2_grpc.HealthCheckResponse.SERVING
-
 def check_activity():
     with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
@@ -231,6 +237,12 @@ def check_activity():
             return 0
         else:
             return 1 # Master is waiting to end execution
+
+def check_health():
+    with grpc.insecure_channel('localhost:50051') as channel:
+        stub = health_pb2_grpc.HealthStub(channel)
+        response = stub.Check(health_pb2.HealthCheckRequest())
+        return response.status == health_pb2.HealthCheckResponse.SERVING
 
 def main_worker(podname):
     """Opening subprocesses"""
@@ -245,10 +257,8 @@ def main_worker(podname):
     # app.wait()
 
     # This make sures that the server is online before we start the application
-    with grpc.insecure_channel('grpc-server.default:30173') as channel:
-        health_stub = health_pb2_grpc.HealthStub(channel)
-        while not check_server_health():
-            time.sleep(1)
+    while not check_health():
+        time.sleep(1)
 
     # Server's up, we send signal
     nodeIsReady(podname)
@@ -258,7 +268,7 @@ def main_worker(podname):
     while end == 0:
         time.sleep(10)
         end = check_activity()
-        
+
     # Send a final message to server that we're shutting down the application now
     end_exec()
     print("Finish execution...")
@@ -281,7 +291,7 @@ def main_master():
     #port = '50051'
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     mpi_monitor_pb2_grpc.add_MonitorServicer_to_server(Monitor(), server)
-    health_pb2_grpc.add_HealthServicer_to_server(health.HealthServicer(), server)
+    health_pb2_grpc.add_HealthServicer_to_server(HealthServicer(), server)
     
     server.add_insecure_port('[::]:' + port)
     server.start()
