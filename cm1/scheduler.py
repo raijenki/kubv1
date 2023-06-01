@@ -4,14 +4,18 @@ import grpc
 import time
 import mpi_monitor_pb2
 import mpi_monitor_pb2_grpc
-
+import copy
+import sys
 from kubernetes import client
-from kubernetes import config
+from kubernetes import config, watch
 
 total_clients = 0
 
 logging.basicConfig(level=logging.INFO)
 config.load_incluster_config()
+
+# Use this one for local testing
+#config.load_kube_config()
 
 PVC_NAME = 'task-pv-claim'
 MOUNT_PATH = '/data'
@@ -33,7 +37,8 @@ class Kubernetes:
             name=name,
             image_pull_policy=pull_policy,
             volume_mounts=[volume_mount],
-            command=["/usr/bin/python3", "hpc-tests/cm1/launcher.py"],
+            args=["sleep", "5"]
+            #command=["/usr/bin/python3", "hpc-tests/cm1/launcher.py"],
         )
 
         logging.info(
@@ -57,52 +62,96 @@ class Kubernetes:
         return pod_template
 
     @staticmethod
-    def create_job(job_name, pod_template):
+    def create_job(job_name, pod_template, num_pods):
         metadata = client.V1ObjectMeta(name=job_name, labels={"job_name": job_name})
 
         job = client.V1Job(
             api_version="batch/v1",
             kind="Job",
             metadata=metadata,
-            spec=client.V1JobSpec(backoff_limit=0, template=pod_template),
+            spec=client.V1JobSpec(backoff_limit=0, template=pod_template, parallelism=num_pods, completions=num_pods),
         )
 
         return job
 
-def create_additional_pod():
-    job_id = uuid.uuid4()
-    pod_id = 0 #job_id
+def create_additional_pods(num_pods, _job_name):
+    pod_id = 0
 
     # Kubernetes instance
     k8s = Kubernetes()
 
     # STEP1: CREATE A CONTAINER
-    _image = "raijenki/mpik8s:cm1"
+    _image = "busybox"
+    #_image = "raijenki/mpik8s:cm1"
     _name = "scheduler"
     _pull_policy = "Always"
 
     shuffler_container = k8s.create_container(_image, _name, _pull_policy)
 
     # STEP2: CREATE A POD TEMPLATE SPEC
-    _pod_name = f"cm1-job-scale-{pod_id}"
+    _pod_name = f"cm1-job-scale-{pod_id}" 
     _pod_spec = k8s.create_pod_template(_pod_name, shuffler_container)
 
     # STEP3: CREATE A JOB
-    _job_name = f"cm1-job-scale-{job_id}"
-    _job = k8s.create_job(_job_name, _pod_spec)
+    _job = k8s.create_job(_job_name, _pod_spec, num_pods)
 
     # STEP4: EXECUTE THE JOB
     batch_api = client.BatchV1Api()
     batch_api.create_namespaced_job("default", _job)
-    print("pod created")
+    print(f"Job created with {num_pods} pods running the container")
+
+def monitor_job_completion(job_name):
+    core_api = client.CoreV1Api()
+    batch_api = client.BatchV1Api()
+
+    # Watch for Job events
+    w = watch.Watch()
+
+    try:
+        # Start watching Job events
+        for event in w.stream(batch_api.list_namespaced_job, namespace="default"):
+            job = event['object']
+
+            # Check if the event is for the desired Job
+            if job.metadata.name == job_name:
+                # Check the Job status
+                if job.status.succeeded == 1:
+                    print("Job completed successfully.")
+
+                    # Delete associated pods and job
+                    pod_list = core_api.list_namespaced_pod(namespace="default", label_selector=f"job-name={job_name}")
+                    batch_api.delete_namespaced_job(name=job_name, namespace="default")
+                    for pod in pod_list.items:
+                        core_api.delete_namespaced_pod(name=pod.metadata.name, namespace="default")
+
+                    break
+
+                elif job.status.failed == 1:
+                    print("Job failed.")
+
+                    # Delete the Job
+                    pod_list = core_api.list_namespaced_pod(namespace="default", label_selector=f"job-name={job_name}")
+                    batch_api.delete_namespaced_job(name=job_name, namespace="default")
+                    for pod in pod_list.items:
+                        core_api.delete_namespaced_pod(name=pod.metadata.name, namespace="default")
+
+                    break
+
+    except KeyboardInterrupt:
+        # Stop watching if interrupted
+        w.stop()
+        print("Monitoring stopped.")
+
 
 def scheduler():
-    time.sleep(30)
+    job_id = uuid.uuid4()
+    _job_name = f"cm1-job-scale-{job_id}"
     with grpc.insecure_channel('grpc-server.default:30173') as channel:
         stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
         response = stub.Scale(mpi_monitor_pb2.additionalNodes(nodes=1, mode='hpa'))
         print(response)
-    create_additional_pod()
+    create_additional_pods(sys.argv[1], _job_name)
+    monitor_job_completion(_job_name)
     return 0
 
 if __name__ == "__main__":

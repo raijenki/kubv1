@@ -236,14 +236,17 @@ def main_worker(podname):
     app = subprocess.Popen(shlex.split(WORKER_CMD), start_new_session=True)
     # signal.signal(signal.SIGTERM, signal_handler)
     # app.wait()
+
+    # This make sures that the server is online before we start the application
+    time.sleep(3)
+
     # Send that we are ready to start
-    time.sleep(10)
     nodeIsReady(podname)
 
     # We send signal to server every minute so we know whether we should end or not the application
     end = 0
     while end == 0:
-        time.sleep(20)
+        time.sleep(10)
         end = check_activity()
     # Send a final message to server that we're shutting down the application now
     end_exec()
