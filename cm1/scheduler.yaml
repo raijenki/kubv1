@@ -7,7 +7,7 @@ spec:
   selector:
     matchLabels:
       app: sched
-  backoffLimit: 2
+  backoffLimit: 0
   ttlSecondsAfterFinished: 600
   template:
     metadata:

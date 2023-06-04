@@ -207,7 +207,7 @@ def end_exec():
         response = stub.endExec(mpi_monitor_pb2.Dummy22(mtest="hello"))
     return 0  
 
-@retry(wait_fixed=1000, stop_max_delay=20000)
+@retry(wait_fixed=2000, stop_max_delay=30000)
 def create_channel():
     # Create a gRPC channel
     channel = grpc.insecure_channel('grpc-server.default:30173') 
