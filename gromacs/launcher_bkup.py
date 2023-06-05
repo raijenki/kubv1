@@ -8,7 +8,6 @@ import fileinput
 import sys
 import time
 import subprocess
-from retrying import retry
 import psutil
 import shlex
 import shutil
@@ -46,9 +45,9 @@ def signal_handler(sig, _frame):
         time.sleep(1)
         count -= 1
     print('Finished cleanup...')
-##############
+#
 # This deals with gRPC protocols
-##############
+#
 class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
     # This is to react according to how scheduler sends the scaling message to us
     def Scale(self, request, context):
@@ -60,10 +59,11 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         with lock:
             totalRanks = totalRanks + request.nodes
         
+        
         # SIGTERM the app
         os.killpg(os.getpgid(app.pid), signal.SIGTERM)
         # Wait few seconds so app can deal with whatever it needs
-        count = 5
+        count = 15
         time.sleep(count)
         #os.killpg(os.getpgid(app.pid), signal.SIGKILL) # Forcefully kill it
         #app.wait() # Wait the app to be killed
@@ -152,27 +152,39 @@ def checkpoint():
     regex_pattern = "|".join(map(re.escape, delimiters))
     f = open('/etc/hostname')
     podname = f.read().rstrip('\n')
-    # For gmx, files are saved only on mpiworker-0, but we don't need to do anything
+    # For cm1, files are saved only on mpiworker-0
     if "mpiworker-0" in podname:
+        chkpt_path = r'/home/hpc-tests/gromacs/'
+        fileList = os.listdir(chkpt_path)
+        rstNo = 0
+        # Get all the files in the directory
+        for file in fileList:
+            if "cm1rst" in file:
+                b = int(re.split(regex_pattern, file)[1])
+                if b > rstNo:
+                    rstNo = b
+        # Now modify the namelist.input
+        line_rstno = " irst      = " + str(rstNo) + ",\n"
+        for line in fileinput.input("/home/hpc-tests/cm1/namelist.input", inplace=True):
+            if line.strip().startswith('irst'):
+                line = line_rstno
+            sys.stdout.write(line)
         confirm_checkpoint()
     # Nothing to do on master
     if "master" in podname:
         pass
     return 0
 
-def start_mpi(extra_args=None):
+def start_mpi():
     global app
     ssh_hosts = open("/root/mpiworker.host")
     MPI_HOST = ','.join(line.strip() for line in ssh_hosts)
     os.environ["MPI_HOST"] = MPI_HOST
-
-    if extra_args is None: # important for gmx
-        MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/gromacs/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " gmx_mpi mdrun -s benchMEM.tpr -ntomp 1 -cpi state.cpt"
-    else:
-        MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/gromacs/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " gmx_mpi mdrun -s benchMEM.tpr -ntomp 1 -cpi state.cpt " + str(extra_args)
-
+    logs = open("/data/gromacs.txt", "w+")
+    error_logs = open("/data/gromacs_error.txt", "w+")
+    MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/gromacs/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " gmx_mpi mdrun -s benchMEM.tpr -ntomp 1 -cpi state.cpt"
     #app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=logs, stderr=error_logs)
     return 0
 
 def get_write_keys(hostip):
@@ -197,24 +209,10 @@ def end_exec():
         response = stub.endExec(mpi_monitor_pb2.Dummy22(mtest="hello"))
     return 0  
 
-@retry(wait_fixed=2000, stop_max_delay=30000)
-def create_channel():
-    # Create a gRPC channel
-    channel = grpc.insecure_channel('grpc-server.default:30173') 
-    try:
-        grpc.channel_ready_future(channel).result(timeout=1)
-        return channel
-    except grpc.FutureTimeoutError:
-        print("Server not yet available, retrying...")
-        raise
-    except grpc.RpcError:
-        print("Error connecting to the server, retrying...")
-        raise
-
 def nodeIsReady(podname):
-    channel = create_channel()
-    stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
-    response = stub.JobInit(mpi_monitor_pb2.nodeName(nodeIP=podname))
+    with grpc.insecure_channel('grpc-server.default:30173') as channel:
+        stub = mpi_monitor_pb2_grpc.MonitorStub(channel)
+        response = stub.JobInit(mpi_monitor_pb2.nodeName(nodeIP=podname))
     return 0  
 
 def check_activity():
@@ -240,16 +238,15 @@ def main_worker(podname):
     app = subprocess.Popen(shlex.split(WORKER_CMD), start_new_session=True)
     # signal.signal(signal.SIGTERM, signal_handler)
     # app.wait()
-
-    # Server's up, we send signal
+    # Send that we are ready to start
+    time.sleep(20)
     nodeIsReady(podname)
 
-    # We send signal to server every few seconds so we know whether we should end or not the application
+    # We send signal to server every minute so we know whether we should end or not the application
     end = 0
     while end == 0:
-        time.sleep(10)
+        time.sleep(20)
         end = check_activity()
-
     # Send a final message to server that we're shutting down the application now
     end_exec()
     print("Finish execution...")
@@ -272,7 +269,6 @@ def main_master():
     #port = '50051'
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     mpi_monitor_pb2_grpc.add_MonitorServicer_to_server(Monitor(), server)
-    
     server.add_insecure_port('[::]:' + port)
     server.start()
     print("Server started, listening on " + port)
@@ -285,7 +281,7 @@ def main_master():
     wait_signal()
 
     # Reuse the function to restart mpi
-    start_mpi(None)
+    start_mpi()
     print("Application started!")
     concludedRanks = 0
 
@@ -299,7 +295,7 @@ def main_master():
         if not mpiexec_exists and chkPt == 2:
             wait_signal()
             chkPt = 0
-            start_mpi(None) # Restart our mpi job
+            start_mpi() # Restart our mpi job
           #print("Waiting")
         time.sleep(10)
 

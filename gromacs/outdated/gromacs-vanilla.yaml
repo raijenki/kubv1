@@ -3,7 +3,7 @@ kind: Job
 metadata:
   name: gmx-job
 spec:
-  minAvailable: 5
+  minAvailable: 4
   schedulerName: volcano
   plugins:
     ssh: []
@@ -23,7 +23,7 @@ spec:
                 - |
                   MPI_HOST=`cat /etc/volcano/mpiworker.host | tr "\n" ","`;
                   mkdir -p /var/run/sshd; /usr/sbin/sshd;
-                  mpiexec --allow-run-as-root -wdir /home --host ${MPI_HOST} -np 5 gmx_mpi mdrun -s benchMEM.tpr -ntomp 1 -cpi state.cpt;
+                  mpiexec --allow-run-as-root -wdir /home/hpc-tests/gromacs --host ${MPI_HOST} -np 3 gmx_mpi mdrun -s benchMEM.tpr -ntomp 1 -cpi state.cpt;
               image: raijenki/mpik8s:gromacs
               imagePullPolicy: Always
               name: mpimaster
@@ -32,7 +32,7 @@ spec:
                   name: mpijob-port
               workingDir: /home
           restartPolicy: OnFailure
-    - replicas: 5
+    - replicas: 4
       name: mpiworker
       template:
         spec:
