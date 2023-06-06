@@ -38,7 +38,7 @@ class Kubernetes:
             image_pull_policy=pull_policy,
             volume_mounts=[volume_mount],
             #args=["sleep", "5"]
-            command=["/usr/bin/python3", "hpc-tests/cm1/launcher.py"],
+            command=["/usr/bin/python3", "hpc-tests/gromacs/launcher.py"],
         )
 
         logging.info(
