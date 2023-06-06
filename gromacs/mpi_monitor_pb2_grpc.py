@@ -32,17 +32,17 @@ class MonitorStub(object):
                 )
         self.activeServer = channel.unary_unary(
                 '/mpi_monitor.Monitor/activeServer',
-                request_serializer=mpi__monitor__pb2.Empty.SerializeToString,
+                request_serializer=mpi__monitor__pb2.Dummy22.SerializeToString,
                 response_deserializer=mpi__monitor__pb2.Confirmation.FromString,
                 )
         self.checkpointing = channel.unary_unary(
                 '/mpi_monitor.Monitor/checkpointing',
-                request_serializer=mpi__monitor__pb2.Empty.SerializeToString,
+                request_serializer=mpi__monitor__pb2.Dummy22.SerializeToString,
                 response_deserializer=mpi__monitor__pb2.Confirmation.FromString,
                 )
         self.endExec = channel.unary_unary(
                 '/mpi_monitor.Monitor/endExec',
-                request_serializer=mpi__monitor__pb2.Empty.SerializeToString,
+                request_serializer=mpi__monitor__pb2.Dummy22.SerializeToString,
                 response_deserializer=mpi__monitor__pb2.Confirmation.FromString,
                 )
 
@@ -113,17 +113,17 @@ def add_MonitorServicer_to_server(servicer, server):
             ),
             'activeServer': grpc.unary_unary_rpc_method_handler(
                     servicer.activeServer,
-                    request_deserializer=mpi__monitor__pb2.Empty.FromString,
+                    request_deserializer=mpi__monitor__pb2.Dummy22.FromString,
                     response_serializer=mpi__monitor__pb2.Confirmation.SerializeToString,
             ),
             'checkpointing': grpc.unary_unary_rpc_method_handler(
                     servicer.checkpointing,
-                    request_deserializer=mpi__monitor__pb2.Empty.FromString,
+                    request_deserializer=mpi__monitor__pb2.Dummy22.FromString,
                     response_serializer=mpi__monitor__pb2.Confirmation.SerializeToString,
             ),
             'endExec': grpc.unary_unary_rpc_method_handler(
                     servicer.endExec,
-                    request_deserializer=mpi__monitor__pb2.Empty.FromString,
+                    request_deserializer=mpi__monitor__pb2.Dummy22.FromString,
                     response_serializer=mpi__monitor__pb2.Confirmation.SerializeToString,
             ),
     }
@@ -200,7 +200,7 @@ class Monitor(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/mpi_monitor.Monitor/activeServer',
-            mpi__monitor__pb2.Empty.SerializeToString,
+            mpi__monitor__pb2.Dummy22.SerializeToString,
             mpi__monitor__pb2.Confirmation.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -217,7 +217,7 @@ class Monitor(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/mpi_monitor.Monitor/checkpointing',
-            mpi__monitor__pb2.Empty.SerializeToString,
+            mpi__monitor__pb2.Dummy22.SerializeToString,
             mpi__monitor__pb2.Confirmation.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
@@ -234,7 +234,7 @@ class Monitor(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/mpi_monitor.Monitor/endExec',
-            mpi__monitor__pb2.Empty.SerializeToString,
+            mpi__monitor__pb2.Dummy22.SerializeToString,
             mpi__monitor__pb2.Confirmation.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

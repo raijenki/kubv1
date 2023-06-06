@@ -12,9 +12,11 @@ class Confirmation(_message.Message):
     confirmMessage: str
     def __init__(self, confirmMessage: _Optional[str] = ..., confirmId: _Optional[int] = ...) -> None: ...
 
-class Empty(_message.Message):
-    __slots__ = []
-    def __init__(self) -> None: ...
+class Dummy22(_message.Message):
+    __slots__ = ["mtest"]
+    MTEST_FIELD_NUMBER: _ClassVar[int]
+    mtest: str
+    def __init__(self, mtest: _Optional[str] = ...) -> None: ...
 
 class SSHKeys(_message.Message):
     __slots__ = ["confirmId", "privJobKey", "pubJobKey"]
@@ -26,20 +28,16 @@ class SSHKeys(_message.Message):
     pubJobKey: str
     def __init__(self, pubJobKey: _Optional[str] = ..., privJobKey: _Optional[str] = ..., confirmId: _Optional[int] = ...) -> None: ...
 
-class Scale(_message.Message):
-    __slots__ = ["nodes"]
-    NODES_FIELD_NUMBER: _ClassVar[int]
-    nodes: int
-    def __init__(self, nodes: _Optional[int] = ...) -> None: ...
-
 class additionalNodes(_message.Message):
-    __slots__ = ["nodes"]
+    __slots__ = ["mode", "nodes"]
+    MODE_FIELD_NUMBER: _ClassVar[int]
     NODES_FIELD_NUMBER: _ClassVar[int]
+    mode: str
     nodes: int
-    def __init__(self, nodes: _Optional[int] = ...) -> None: ...
+    def __init__(self, nodes: _Optional[int] = ..., mode: _Optional[str] = ...) -> None: ...
 
 class nodeName(_message.Message):
-    __slots__ = ["nodeName"]
-    NODENAME_FIELD_NUMBER: _ClassVar[int]
-    nodeName: str
-    def __init__(self, nodeName: _Optional[str] = ...) -> None: ...
+    __slots__ = ["nodeIP"]
+    NODEIP_FIELD_NUMBER: _ClassVar[int]
+    nodeIP: str
+    def __init__(self, nodeIP: _Optional[str] = ...) -> None: ...
