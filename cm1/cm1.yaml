@@ -3,7 +3,7 @@ kind: Job
 metadata:
   name: cm1-job
 spec:
-  minAvailable: 3
+  minAvailable: 4
   schedulerName: volcano
   plugins:
     ssh: []
@@ -36,7 +36,7 @@ spec:
                   name: mpijob-port
               workingDir: /home
           restartPolicy: Never
-    - replicas: 2
+    - replicas: 3
       name: mpiworker
       template:
         spec:

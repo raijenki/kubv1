@@ -1,3 +1,3 @@
 kubectl create -f gromacs.yaml
-sleep 30
+sleep 115
 kubectl create -f scheduler.yaml

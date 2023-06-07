@@ -22,7 +22,7 @@ spec:
       containers:
       - name: stream
         image: raijenki/mpik8s:gromacs
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
           #command: ["/bin/sleep", "7200"]
         volumeMounts:
           - mountPath: /data

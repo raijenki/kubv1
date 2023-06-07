@@ -175,12 +175,17 @@ def checkpoint():
         pass
     return 0
 
-def start_mpi():
+def start_mpi(extra_args=None):
     global app
     ssh_hosts = open("/root/mpiworker.host")
     MPI_HOST = ','.join(line.strip() for line in ssh_hosts)
     os.environ["MPI_HOST"] = MPI_HOST
-    MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " /home/hpc-tests/cm1/cm1.exe"
+
+    if extra_args is None: # doesn't matter for cm1 
+        MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " /home/hpc-tests/cm1/cm1.exe"
+    else:
+        MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/cm1/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " /home/hpc-tests/cm1/cm1.exe"
+
     #app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     return 0
@@ -295,7 +300,7 @@ def main_master():
     wait_signal()
 
     # Reuse the function to restart mpi
-    start_mpi()
+    start_mpi(None)
     print("Application started!")
     concludedRanks = 0
 
@@ -309,7 +314,7 @@ def main_master():
         if not mpiexec_exists and chkPt == 2:
             wait_signal()
             chkPt = 0
-            start_mpi() # Restart our mpi job
+            start_mpi(None) # Restart our mpi job
           #print("Waiting")
         time.sleep(10)
 
