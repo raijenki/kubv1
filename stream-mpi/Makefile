@@ -1,5 +1,5 @@
 CC = mpicc
-CFLAGS = -O2 -mcmodel=large
+CFLAGS = -O0 -mcmodel=large
 
 
 all: stream_mpi

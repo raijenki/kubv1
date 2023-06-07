@@ -24,7 +24,7 @@
 #define SCALAR 0.42
 #endif
 
-#define NLOOP 16
+#define NLOOP 32
 
 /*
  *	3) Compile the code with optimization.  Many compilers generate
@@ -266,33 +266,35 @@ main(int argc, char **argv){
 	}
 
     /* --- SETUP --- initialize arrays and estimate precision of timer --- */
-#pragma omp parallel for
-    for (int j=0; j<array_elements; j++) {
-	    a[j] = 1.0;
-	    b[j] = 2.0;
-	    c[j] = 0.0;
+	// Check if k.dat exists, if not do nothing
+	k = 0;
+	FILE *fp = fopen("./data/k.dat", "r");
+	if (fp) { // file exists, load times
+		fscanf(fp,"%d", &qq);
+		fclose(fp);
+		stream_load(myrank, array_elements);
+		k = k + qq;
+		backup = 2; // Ensure this is executed only once
+		printf("Rank %d RESUMING from k=%d !!\n", myrank,k);
+	}else{
+		#pragma omp parallel for
+		for (int j=0; j<array_elements; j++) {
+			a[j] = 1.0;
+			b[j] = 2.0;
+			c[j] = 0.0;
+		}
 	}
-
+		
     
     /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
 	double timing_prev = MPI_Wtime();
-    for (k=0; k<NTIMES; k++)
+    for (; k<NTIMES; k++)
 	{
 		if(backup == 1) {
 			stream_write(k, myrank, array_elements);
 			printf("Rank %d finished iteration %d , checkpointing is done, stop now\n", myrank, (k-1));
 			MPI_Finalize();
 			return 0;
-		}else if(backup == 0){ // Check if k.dat exists, if not do nothing
-			FILE *fp = fopen("./data/k.dat", "r");
-			if (fp) { // file exists, load times
-				fscanf(fp,"%d", &qq);
-				fclose(fp);
-				stream_load(myrank, array_elements);
-				k = k + qq;
-				backup = 2; // Ensure this is executed only once
-				printf("Rank %d RESUMING before MPI_Barrier()...!!\n", myrank);
-			}
 		}
 
 		// kernel 1: Copy
@@ -307,7 +309,7 @@ main(int argc, char **argv){
 		}
 		//MPI_Barrier(MPI_COMM_WORLD);
 		if(k%10==0 && myrank==0) {
-			fprintf(stderr, "%d outp of %d : Time (%.3f sec)\n", k, NTIMES, MPI_Wtime()-timing_prev);
+			fprintf(stderr, "%d out of %d : Time (%.3f sec)\n", k, NTIMES, MPI_Wtime()-timing_prev);
 			timing_prev = MPI_Wtime();
 		}
 
