@@ -24,7 +24,7 @@
 #define SCALAR 0.42
 #endif
 
-#define NLOOP 24
+#define NLOOP 8
 
 /*
  *	3) Compile the code with optimization.  Many compilers generate

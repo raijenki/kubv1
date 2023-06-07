@@ -169,7 +169,7 @@ def start_mpi(extra_args=None):
     if extra_args is None: # important for gmx
         MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " stream_mpi 100000000 1000"
     else:
-        MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " stream_mpi 100000000 1000 " + str(extra_args)
+        MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " stream_mpi 20000000 100 " + str(extra_args)
 
     #app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
