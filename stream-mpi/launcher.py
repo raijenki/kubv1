@@ -167,7 +167,7 @@ def start_mpi(extra_args=None):
     os.environ["MPI_HOST"] = MPI_HOST
 
     if extra_args is None: # important for gmx
-        MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " stream_mpi 100000000 1000"
+        MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " stream_mpi 20000000 100"
     else:
         MASTER_CMD = "mpiexec --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " stream_mpi 20000000 100 " + str(extra_args)
 
