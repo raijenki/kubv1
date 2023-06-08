@@ -89,7 +89,7 @@ def create_additional_pods(num_pods, _job_name):
     shuffler_container = k8s.create_container(_image, _name, _pull_policy)
 
     # STEP2: CREATE A POD TEMPLATE SPEC
-    _pod_name = f"gmx-job-scale-{pod_id}" 
+    _pod_name = f"smpi-job-scale-{pod_id}" 
     _pod_spec = k8s.create_pod_template(_pod_name, shuffler_container)
 
     # STEP3: CREATE A JOB
