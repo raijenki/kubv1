@@ -5,6 +5,11 @@ values=(8 16 32 48 64 128)
 for val in "${values[@]}"
 do
 	sed -i "s/#define NLOOP [0-9]\+/#define NLOOP $val/" stream_mpi.c 
+	git add .
+	git commit -m "update nloop"
+	git push
+	docker build . --tag=raijenki/mpik8s:smpi --no-cache
+	docker push raijenki/mpik8s:smpi
 	for i in 1 2 3
 	do
 		echo "STARTING $val - Trial $i" >> parint.txt 

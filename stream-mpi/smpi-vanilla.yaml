@@ -25,7 +25,7 @@ spec:
                   mkdir -p /var/run/sshd; /usr/sbin/sshd;
                   mpiexec --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host ${MPI_HOST} -np 3 /home/hpc-tests/stream-mpi/stream_mpi 100000000 600;
               image: raijenki/mpik8s:smpi
-              imagePullPolicy: IfNotPresent
+              imagePullPolicy: Always
               name: mpimaster
               ports:
                 - containerPort: 22
@@ -43,7 +43,7 @@ spec:
                 - |
                   mkdir -p /var/run/sshd; /usr/sbin/sshd -D;
               image: raijenki/mpik8s:smpi
-              imagePullPolicy: IfNotPresent
+              imagePullPolicy: Always
               name: mpiworker
               ports:
                 - containerPort: 22
