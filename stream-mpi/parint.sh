@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#values=(8 16 32 48 64)
 values=(8 16 32 48 64)
 
 for val in "${values[@]}"
@@ -12,12 +13,12 @@ do
 	docker push raijenki/mpik8s:smpi
 	for i in 1 2 3
 	do
-		echo "STARTING $val - Trial $i" >> parint_2ranks.txt 
+		echo "STARTING $val - Trial $i" >> parint_6ranks.txt 
 		kubectl create -f smpi-vanilla.yaml
 		sleep 900
-		kubectl describe job.batch.volcano.sh >> parint_2ranks.txt 
+		kubectl describe job.batch.volcano.sh >> parint_6ranks.txt 
 		kubectl delete -f smpi-vanilla.yaml
 		sleep 10
-		echo "FINISHED" >> parint_2ranks.txt
+		echo "FINISHED" >> parint_6ranks.txt
 	done
 done
