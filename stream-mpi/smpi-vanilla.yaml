@@ -3,7 +3,7 @@ kind: Job
 metadata:
   name: smpi-job
 spec:
-  minAvailable: 7
+  minAvailable: 5
   schedulerName: volcano
   plugins:
     ssh: []
@@ -23,7 +23,7 @@ spec:
                 - |
                   MPI_HOST=`cat /etc/volcano/mpiworker.host | tr "\n" ","`;
                   mkdir -p /var/run/sshd; /usr/sbin/sshd;
-                  mpiexec --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host ${MPI_HOST} -np 6 /home/hpc-tests/stream-mpi/stream_mpi 100000000 100;
+                  mpiexec --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host ${MPI_HOST} -np 4 /home/hpc-tests/stream-mpi/stream_mpi 100000000 100;
               image: raijenki/mpik8s:smpi
               imagePullPolicy: Always
               name: mpimaster
@@ -32,7 +32,7 @@ spec:
                   name: mpijob-port
               workingDir: /home
           restartPolicy: OnFailure
-    - replicas: 6
+    - replicas: 4
       name: mpiworker
       template:
         spec:
