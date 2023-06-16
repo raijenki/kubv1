@@ -1539,3 +1539,144 @@ Events:
   Warning  PodGroupPending  14m (x19 over 15m)  vc-controller-manager  PodGroup default:smpi-job unschedule,reason: 4/0 tasks in gang unschedulable: pod group is not ready, 4 minAvailable
   Normal   ExecuteAction    8m56s               vc-controller-manager  Start to execute action CompleteJob
 FINISHED
+STARTING 64 - Trial 1
+Name:         smpi-job
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+API Version:  batch.volcano.sh/v1alpha1
+Kind:         Job
+Metadata:
+  Creation Timestamp:  2023-06-16T08:23:31Z
+  Generation:          1
+  Managed Fields:
+    API Version:  batch.volcano.sh/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:spec:
+        .:
+        f:minAvailable:
+        f:plugins:
+          .:
+          f:ssh:
+          f:svc:
+        f:schedulerName:
+        f:tasks:
+    Manager:      kubectl-create
+    Operation:    Update
+    Time:         2023-06-16T08:23:31Z
+    API Version:  batch.volcano.sh/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:status:
+        .:
+        f:conditions:
+        f:minAvailable:
+        f:runningDuration:
+        f:state:
+          .:
+          f:lastTransitionTime:
+          f:phase:
+        f:succeeded:
+        f:taskStatusCount:
+          .:
+          f:mpimaster:
+            .:
+            f:phase:
+              .:
+              f:Succeeded:
+        f:version:
+    Manager:         Go-http-client
+    Operation:       Update
+    Subresource:     status
+    Time:            2023-06-16T08:29:52Z
+  Resource Version:  1156894
+  UID:               a0e33bc1-1bd5-4278-a94f-54951df97281
+Spec:
+  Max Retry:      3
+  Min Available:  4
+  Plugins:
+    Ssh:
+    Svc:
+  Queue:           default
+  Scheduler Name:  volcano
+  Tasks:
+    Max Retry:      3
+    Min Available:  1
+    Name:           mpimaster
+    Policies:
+      Action:  CompleteJob
+      Event:   TaskCompleted
+    Replicas:  1
+    Template:
+      Metadata:
+      Spec:
+        Containers:
+          Command:
+            /bin/sh
+            -c
+            MPI_HOST=`cat /etc/volcano/mpiworker.host | tr "\n" ","`;
+mkdir -p /var/run/sshd; /usr/sbin/sshd;
+mpiexec --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host ${MPI_HOST} -np 3 /home/hpc-tests/stream-mpi/stream_mpi 100000000 600;
+
+          Image:              raijenki/mpik8s:smpi
+          Image Pull Policy:  Always
+          Name:               mpimaster
+          Ports:
+            Container Port:  22
+            Name:            mpijob-port
+            Protocol:        TCP
+          Resources:
+          Working Dir:   /home
+        Restart Policy:  OnFailure
+    Max Retry:           3
+    Min Available:       3
+    Name:                mpiworker
+    Replicas:            3
+    Template:
+      Metadata:
+      Spec:
+        Containers:
+          Command:
+            /bin/sh
+            -c
+            mkdir -p /var/run/sshd; /usr/sbin/sshd -D;
+
+          Image:              raijenki/mpik8s:smpi
+          Image Pull Policy:  Always
+          Name:               mpiworker
+          Ports:
+            Container Port:  22
+            Name:            mpijob-port
+            Protocol:        TCP
+          Resources:
+          Working Dir:   /home
+        Restart Policy:  OnFailure
+Status:
+  Conditions:
+    Last Transition Time:  2023-06-16T08:23:31Z
+    Status:                Pending
+    Last Transition Time:  2023-06-16T08:23:56Z
+    Status:                Running
+    Last Transition Time:  2023-06-16T08:29:52Z
+    Status:                Completing
+    Last Transition Time:  2023-06-16T08:29:52Z
+    Status:                Completed
+  Min Available:           4
+  Running Duration:        6m52.323417684s
+  State:
+    Last Transition Time:  2023-06-16T08:29:52Z
+    Phase:                 Completed
+  Succeeded:               1
+  Task Status Count:
+    Mpimaster:
+      Phase:
+        Succeeded:  1
+  Version:          9
+Events:
+  Type     Reason           Age                 From                   Message
+  ----     ------           ----                ----                   -------
+  Warning  PodGroupPending  14m (x18 over 15m)  vc-controller-manager  PodGroup default:smpi-job unschedule,reason: 4/0 tasks in gang unschedulable: pod group is not ready, 4 minAvailable
+  Normal   ExecuteAction    8m40s               vc-controller-manager  Start to execute action CompleteJob
+FINISHED
+STARTING 64 - Trial 2
