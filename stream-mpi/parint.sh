@@ -1,6 +1,6 @@
 #!/bin/bash
 
-values=(8 16 32 48 64 128)
+values=(16 32 48 64 128)
 
 for val in "${values[@]}"
 do
