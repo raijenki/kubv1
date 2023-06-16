@@ -1,6 +1,6 @@
 #!/bin/bash
 
-values=(16 32 64 128)
+values=(8 16 32 48 64)
 
 for val in "${values[@]}"
 do
@@ -17,7 +17,7 @@ do
 		sleep 900
 		kubectl describe job.batch.volcano.sh >> parint_2ranks.txt 
 		kubectl delete -f smpi-vanilla.yaml
-		sleep 15
+		sleep 10
 		echo "FINISHED" >> parint_2ranks.txt
 	done
 done
