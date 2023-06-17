@@ -1,9 +1,9 @@
-apiVersion: batch.volcano.sh/v1alpha1
+apiVersion: bat2h.volcano.sh/v1alpha1
 kind: Job
 metadata:
   name: smpi-job
 spec:
-  minAvailable: 5
+  minAvailable: 3
   schedulerName: volcano
   plugins:
     ssh: []
@@ -36,7 +36,7 @@ spec:
                   name: mpijob-port
               workingDir: /home
           restartPolicy: Never
-    - replicas: 4
+    - replicas: 2
       name: mpiworker
       template:
         spec:
