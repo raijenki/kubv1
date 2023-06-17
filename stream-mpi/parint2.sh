@@ -1,8 +1,7 @@
 #!/bin/bash
 
 #values=(8 16 32 48 64)
-values=(16 32 48 64)
-sleep 2100
+values=(8)
 for val in "${values[@]}"
 do
 	sed -i "s/#define NLOOP [0-9]\+/#define NLOOP $val/" stream_mpi.c 
@@ -15,7 +14,7 @@ do
 	do
 		echo "STARTING $val - Trial $i" >> parint_2ranks2.txt 
 		kubectl create -f smpi-vanilla2.yaml
-		sleep 1500
+		sleep 480
 		kubectl describe job.batch.volcano.sh >> parint_2ranks2.txt 
 		kubectl delete -f smpi-vanilla2.yaml
 		sleep 10
