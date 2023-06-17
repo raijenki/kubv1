@@ -1,4 +1,4 @@
-apiVersion: bat2h.volcano.sh/v1alpha1
+apiVersion: batch.volcano.sh/v1alpha1
 kind: Job
 metadata:
   name: smpi-job
