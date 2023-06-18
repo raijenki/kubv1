@@ -11,8 +11,6 @@ do
 	git push
 	docker build . --tag=raijenki/mpik8s:smpi --no-cache
 	docker push raijenki/mpik8s:smpi
-	for scen in "${scenarios[@]}"
-	do
 	if [ $val -eq 16 ]
 	then
 		for i in 1 2 3
@@ -40,5 +38,4 @@ do
 		echo "FINISHED" >> parint_6ranks.txt
 		done
 	fi
-	done
 done
