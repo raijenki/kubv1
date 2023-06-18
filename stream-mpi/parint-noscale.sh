@@ -9,33 +9,33 @@ do
 	git add .
 	git commit -m "auto update nloop"
 	git push
-	docker build . --tag=raijenki/mpik8s:smpi --no-cache
+	docker build . --tag=raijenki/mpik8s:smpi
 	docker push raijenki/mpik8s:smpi
 	if [ $val -eq 16 ]
 	then
 		for i in 1 2 3
 		do
-		echo "STARTING $val - Trial $i" >> parint_6ranks.txt 
+		echo "STARTING $val - Trial $i" >> parint_4ranks.txt 
 		kubectl create -f smpi.yaml
 		kubectl create -f scheduler.yaml
-		sleep 200
-		kubectl describe job.batch.volcano.sh >> parint_6ranks.txt 
+		sleep 250
+		kubectl describe job.batch.volcano.sh >> parint_4ranks.txt 
 		kubectl delete -f smpi.yaml
 		sleep 10
-		echo "FINISHED" >> parint_6ranks.txt
+		echo "FINISHED" >> parint_4ranks.txt
 		done
 	fi
 	if [ $val -eq 64 ]
 	then
 		for i in 1 2 3
 		do
-		echo "STARTING $val - Trial $i" >> parint_6ranks.txt 
+		echo "STARTING $val - Trial $i" >> parint_4ranks.txt 
 		kubectl create -f smpi.yaml
-		sleep 400
-		kubectl describe job.batch.volcano.sh >> parint_6ranks.txt 
+		sleep 520
+		kubectl describe job.batch.volcano.sh >> parint_4ranks.txt 
 		kubectl delete -f smpi.yaml
 		sleep 10
-		echo "FINISHED" >> parint_6ranks.txt
+		echo "FINISHED" >> parint_4ranks.txt
 		done
 	fi
 done

@@ -30,6 +30,7 @@ RUN cd /home && git clone https://github.com/raijenki/hpc-tests.git \
 FROM debian:11-slim As prod
 RUN apt-get update && apt-get install -y glibc-source ssh openmpi-bin libgomp1 python3 python3-pip git time
 RUN pip install grpcio grpcio-tools psutil kubernetes retrying
+ADD "https://www.random.org/cgi-bin/randbyte?nbytes=10&format=h" skipcache
 RUN cd /home && git clone http://github.com/raijenki/hpc-tests.git && cd hpc-tests/stream-mpi && python3 -m grpc_tools.protoc -I. --python_out=. --pyi_out=. --grpc_python_out=. mpi_monitor.proto
 COPY --from=base /home/hpc-tests/stream-mpi/stream_mpi /home/hpc-tests/stream-mpi/stream_mpi
 RUN chmod +x /home/hpc-tests/stream-mpi/stream_mpi
