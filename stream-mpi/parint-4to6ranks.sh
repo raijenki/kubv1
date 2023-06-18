@@ -27,6 +27,7 @@ do
 		kubectl describe job.batch.volcano.sh >> parint_4to6ranks_16.txt 
 		kubectl delete -f smpi.yaml -f scheduler.yaml
 		sleep 10
+		rm /home/daniel/k3dvol/*
 		echo "FINISHED" >> parint_4to6ranks_16.txt
 		done
 	fi
@@ -41,6 +42,7 @@ do
 		sleep 350
 		kubectl describe job.batch.volcano.sh >> parint_4to6ranks_32.txt 
 		kubectl delete -f smpi.yaml -f scheduler.yaml
+		rm /home/daniel/k3dvol/*
 		sleep 10
 		echo "FINISHED" >> parint_4to6ranks_32.txt
 		done
@@ -57,6 +59,7 @@ do
 		sleep 400
 		kubectl describe job.batch.volcano.sh >> parint_4to6ranks_64.txt 
 		kubectl delete -f smpi.yaml -f scheduler.yaml
+		rm /home/daniel/k3dvol/*
 		sleep 10
 		echo "FINISHED" >> parint_4to6ranks_64.txt
 		done
