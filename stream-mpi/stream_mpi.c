@@ -24,7 +24,7 @@
 #define SCALAR 0.42
 #endif
 
-#define NLOOP 64
+#define NLOOP 16
 
 /*
  *	3) Compile the code with optimization.  Many compilers generate
@@ -108,7 +108,7 @@ int stream_load(int myrank, int array_length) {
 	fclose(f2);*/
 
 	if(myrank==0){
-		FILE *f2 = fopen("c.dat", "r");
+		FILE *f2 = fopen("/data/c.dat", "r");
 		if(f2){
 			fread( recv_array, sizeof(double) , ARRAY_SIZE, f2);
 			fclose(f2);
@@ -123,7 +123,7 @@ void stream_write(int k, int myrank, int array_length) {
 	
 	//Only Rank 0 needs to save k.data because all MPI ranks have the same k
 	if(myrank==0){
-		FILE *f1 = fopen("k.dat", "w");
+		FILE *f1 = fopen("/data/k.dat", "w");
 		fprintf(f1,"%d",k);
 		fclose(f1);
 	}
@@ -157,7 +157,7 @@ void stream_write(int k, int myrank, int array_length) {
 
 	MPI_Gather(c, array_length, MPI_DOUBLE, recv_array, array_length, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 	if(myrank==0){
-		FILE *f2 = fopen("c.dat", "wb");
+		FILE *f2 = fopen("/data/c.dat", "wb");
 		if(f2){
 			fwrite(c , sizeof(double) , ARRAY_SIZE, f2 );
 			fclose(f2);
@@ -268,7 +268,7 @@ main(int argc, char **argv){
     /* --- SETUP --- initialize arrays and estimate precision of timer --- */
 	// Check if k.dat exists, if not do nothing
 	k = 0;
-	FILE *fp = fopen("k.dat", "r");
+	FILE *fp = fopen("/data/k.dat", "r");
 	if (fp) { // file exists, load times
 		fscanf(fp,"%d", &qq);
 		fclose(fp);

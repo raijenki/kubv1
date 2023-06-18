@@ -40,11 +40,18 @@ spec:
       name: mpiworker
       template:
         spec:
+          volumes:
+          - name: task-pv-storage
+            persistentVolumeClaim:
+              claimName: task-pv-claim
           containers:
             - command: ["/usr/bin/python3", "hpc-tests/stream-mpi/launcher.py"]
               image: raijenki/mpik8s:smpi
               imagePullPolicy: Always
               name: mpiworker
+              volumeMounts:
+                - mountPath: /data
+                  name: task-pv-storage
               ports:
                 - containerPort: 22
                   name: mpijob-port
