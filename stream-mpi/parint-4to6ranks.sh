@@ -11,7 +11,7 @@ do
 	git add .
 	git commit -m "auto update nloop"
 	git push
-	docker build . --tag=raijenki/mpik8s:smpi --no-cache
+	docker build . --tag=raijenki/mpik8s:smpi
 	docker push raijenki/mpik8s:smpi
 	for scen in "${scenarios[@]}"
 	do
