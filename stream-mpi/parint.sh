@@ -2,8 +2,8 @@
 
 #values=(8 16 32 48 64)
 values=(16 64)
-#scenarios=(90 150 210 320 530 740) 
-scenarios=(34 58 80 113 190 262)
+scenarios=(90 150 210 320 530 740) 
+#scenarios=(34 58 80 113 190 262)
 
 for val in "${values[@]}"
 do
@@ -15,7 +15,7 @@ do
 	docker push raijenki/mpik8s:smpi
 	for scen in "${scenarios[@]}"
 	do
-	if [ $val -eq 16 ] && [ $scen -lt 100 ]
+	if [ $val -eq 16 ] && [ $scen -lt 250 ]
 	then
 		for i in 1 2 3
 		do
@@ -30,7 +30,7 @@ do
 		echo "FINISHED" >> parint_4to6ranks_16.txt
 		done
 	fi
-	if [ $val -eq 64 ] && [ $scen -gt 100 ]
+	if [ $val -eq 64 ] && [ $scen -gt 250 ]
 	then
 		for i in 1 2 3
 		do
