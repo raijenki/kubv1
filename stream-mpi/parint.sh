@@ -15,7 +15,7 @@ do
 	docker push raijenki/mpik8s:smpi
 	for scen in "${scenarios[@]}"
 	do
-	if [ $scen -lt 100 ]
+	if [ $val -eq 16 ] && [ $scen -lt 100 ]
 	then
 		for i in 1 2 3
 		do
@@ -23,14 +23,14 @@ do
 		kubectl create -f smpi.yaml
 		sleep $scenarios
 		kubectl create -f scheduler.yaml
-		sleep 200
+		sleep 300
 		kubectl describe job.batch.volcano.sh >> parint_4to6ranks_16.txt 
 		kubectl delete -f smpi.yaml -f scheduler.yaml
 		sleep 10
 		echo "FINISHED" >> parint_4to6ranks_16.txt
 		done
 	fi
-	if [ $scen -gt 100 ]
+	if [ $val -eq 64 ] && [ $scen -gt 100 ]
 	then
 		for i in 1 2 3
 		do
