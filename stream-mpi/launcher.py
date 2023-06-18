@@ -63,7 +63,7 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         # SIGTERM the app
         os.killpg(os.getpgid(app.pid), signal.SIGTERM)
         # Wait few seconds so app can deal with whatever it needs
-        count = 5
+        count = 10
         time.sleep(count)
         #os.killpg(os.getpgid(app.pid), signal.SIGKILL) # Forcefully kill it
         #app.wait() # Wait the app to be killed
@@ -167,9 +167,9 @@ def start_mpi(extra_args=None):
     os.environ["MPI_HOST"] = MPI_HOST
 
     if extra_args is None: # important for gmx
-        MASTER_CMD = "mpiexec --mca odls_base_sigkill_timeout 5 --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " stream_mpi 100000000 100"
+        MASTER_CMD = "mpiexec --mca odls_base_sigkill_timeout 10 --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " stream_mpi 100000000 100"
     else:
-        MASTER_CMD = "mpiexec --mca odls_base_sigkill_timeout 5 --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " stream_mpi 100000000 100 " + str(extra_args)
+        MASTER_CMD = "mpiexec --mca odls_base_sigkill_timeout 10 --allow-run-as-root -wdir /home/hpc-tests/stream-mpi/ --host " +  str(MPI_HOST) + " -np " + str(getNumberOfRanks()) + " stream_mpi 100000000 100 " + str(extra_args)
 
     #app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     app = subprocess.Popen(shlex.split(MASTER_CMD), start_new_session=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
