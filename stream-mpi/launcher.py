@@ -152,7 +152,7 @@ def checkpoint():
     regex_pattern = "|".join(map(re.escape, delimiters))
     f = open('/etc/hostname')
     podname = f.read().rstrip('\n')
-    # For gmx, files are saved only on mpiworker-0, but we don't need to do anything
+    # For parint, files are saved only on mpiworker-0, but we don't need to do anything
     if "mpiworker-0" in podname:
         confirm_checkpoint()
     # Nothing to do on master
