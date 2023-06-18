@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #values=(8 16 32 48 64)
-values=(16)
+values=(16 64)
 
 for val in "${values[@]}"
 do
@@ -15,26 +15,26 @@ do
 	then
 		for i in 1 2 3
 		do
-		echo "STARTING $val - Trial $i" >> parint_6ranks.txt 
+		echo "STARTING $val - Trial $i" >> parint_2ranks.txt 
 		kubectl create -f smpi.yaml
-		sleep 200
-		kubectl describe job.batch.volcano.sh >> parint_6ranks.txt 
+		sleep 400
+		kubectl describe job.batch.volcano.sh >> parint_2ranks.txt 
 		kubectl delete -f smpi.yaml
 		sleep 10
-		echo "FINISHED" >> parint_6ranks.txt
+		echo "FINISHED" >> parint_2ranks.txt
 		done
 	fi
 	if [ $val -eq 64 ]
 	then
 		for i in 1 2 3
 		do
-		echo "STARTING $val - Trial $i" >> parint_4ranks.txt 
+		echo "STARTING $val - Trial $i" >> parint_2ranks.txt 
 		kubectl create -f smpi.yaml
-		sleep 520
-		kubectl describe job.batch.volcano.sh >> parint_4ranks.txt 
+		sleep 1200
+		kubectl describe job.batch.volcano.sh >> parint_2ranks.txt 
 		kubectl delete -f smpi.yaml
 		sleep 10
-		echo "FINISHED" >> parint_4ranks.txt
+		echo "FINISHED" >> parint_2ranks.txt
 		done
 	fi
 done
