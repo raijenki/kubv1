@@ -17,7 +17,6 @@ do
 		do
 		echo "STARTING $val - Trial $i" >> parint_4ranks.txt 
 		kubectl create -f smpi.yaml
-		kubectl create -f scheduler.yaml
 		sleep 250
 		kubectl describe job.batch.volcano.sh >> parint_4ranks.txt 
 		kubectl delete -f smpi.yaml
