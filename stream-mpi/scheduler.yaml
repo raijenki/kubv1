@@ -28,5 +28,5 @@ spec:
           - mountPath: /data
             name: task-pv-storage
         command: ["/usr/bin/python3", "hpc-tests/stream-mpi/scheduler.py"]
-        args: ["2"]
+        args: ["4"]
       restartPolicy: Never
