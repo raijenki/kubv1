@@ -63,7 +63,7 @@ class Monitor(mpi_monitor_pb2_grpc.MonitorServicer):
         # SIGTERM the app
         os.killpg(os.getpgid(app.pid), signal.SIGUSR1)
         # Wait few seconds so app can deal with whatever it needs
-        count = 4
+        count = 5
         time.sleep(count)
         #os.killpg(os.getpgid(app.pid), signal.SIGKILL) # Forcefully kill it
         #app.wait() # Wait the app to be killed
