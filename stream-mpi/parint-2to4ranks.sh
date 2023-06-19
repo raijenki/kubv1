@@ -21,9 +21,9 @@ do
 		do
 		echo "STARTING $val - Trial $i - Base $scen" >> parint_2to4ranks_16.txt 
 		kubectl create -f smpi.yaml
-		sleep $scenarios
+		sleep "$scen"
 		kubectl create -f scheduler.yaml
-		sleep 350
+		sleep 250
 		kubectl describe job.batch.volcano.sh >> parint_2to4ranks_16.txt 
 		kubectl delete -f smpi.yaml -f scheduler.yaml
 		sleep 10
@@ -37,9 +37,9 @@ do
 		do
 		echo "STARTING $val - Trial $i - Base $scen" >> parint_2to4ranks_32.txt 
 		kubectl create -f smpi.yaml
-		sleep $scenarios
+		sleep "$scen"
 		kubectl create -f scheduler.yaml
-		sleep 600
+		sleep 350
 		kubectl describe job.batch.volcano.sh >> parint_2to4ranks_32.txt 
 		kubectl delete -f smpi.yaml -f scheduler.yaml
 		rm -f /home/daniel/k3dvol/*
@@ -54,9 +54,9 @@ do
 		do
 		echo "STARTING $val - Trial $i - Base $scen" >> parint_2to4ranks_64.txt 
 		kubectl create -f smpi.yaml
-		sleep $scenarios
+		sleep "$scen"
 		kubectl create -f scheduler.yaml
-		sleep 1100
+		sleep 600
 		kubectl describe job.batch.volcano.sh >> parint_2to4ranks_64.txt 
 		kubectl delete -f smpi.yaml -f scheduler.yaml
 		rm -f /home/daniel/k3dvol/*
