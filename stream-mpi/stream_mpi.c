@@ -186,7 +186,7 @@ main(int argc, char **argv){
 	struct sigaction action;
     memset(&action, 0, sizeof(action));
     action.sa_handler = term;
-    sigaction(SIGTERM, &action, NULL);
+    sigaction(SIGUSR1, &action, NULL);
 
 	int         rc, numranks, myrank;
 	STREAM_TYPE	AvgError[3] = {0.0,0.0,0.0};
