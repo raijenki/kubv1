@@ -4,7 +4,7 @@
 values=(16 32 64)
 #scenarios=(90 150 210 165 270 380 320 530 740) 
 scenarios=(34 58 80 45 75 105 113 190 262)
-
+rm -f /home/daniel/k3dvol/*
 for val in "${values[@]}"
 do
 	sed -i "s/#define NLOOP [0-9]\+/#define NLOOP $val/" stream_mpi.c 
