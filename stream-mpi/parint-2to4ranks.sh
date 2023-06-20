@@ -1,8 +1,10 @@
 #!/bin/bash
 
 #values=(8 16 32 48 64)
-values=(16 32 64)
-scenarios=(90 150 210 165 270 380 320 530 740) 
+#values=(16 32 64)
+values=(32)
+scenarios=(380)
+#scenarios=(90 150 210 165 270 380 320 530 740) 
 #scenarios=(34 58 80 45 75 105 113 190 262)
 rm -f /home/daniel/k3dvol/*
 for val in "${values[@]}"
@@ -31,7 +33,7 @@ do
 		echo "FINISHED" >> parint_2to4ranks_16.txt
 		done
 	fi
-	if [ $val -eq 32 ] && ([ $scen -eq 165 ] || [ $scen -eq 270 ] || [ $scen -eq 385 ])
+	if [ $val -eq 32 ] && ([ $scen -eq 165 ] || [ $scen -eq 270 ] || [ $scen -eq 380 ])
 	then
 		for i in 1 2 3
 		do
