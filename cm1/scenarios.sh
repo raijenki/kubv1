@@ -1,3 +1,3 @@
 kubectl create -f cm1.yaml
-sleep 105
+sleep 30
 kubectl create -f scheduler.yaml
