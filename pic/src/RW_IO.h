@@ -346,13 +346,14 @@ inline void saveParameters(struct parameters* param) {
 }
 
 
-inline void Write_E_B_2D(int cycle, struct grid *grd, struct EMfield* field){
+inline void Write_E_B_2D(int cycle, struct grid *grd, struct EMfield* field, struct parameters* param){
+    
     // stream file to be opened and managed
     string filename = "Ex";
     string temp;
     std::stringstream cc;
     cc << cycle;
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     
     int nxn = grd->nxn;
@@ -380,7 +381,7 @@ inline void Write_E_B_2D(int cycle, struct grid *grd, struct EMfield* field){
     
     // Ey
     filename = "Ey";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_fileEy(temp.c_str());
@@ -399,7 +400,7 @@ inline void Write_E_B_2D(int cycle, struct grid *grd, struct EMfield* field){
     
     // Ez
     filename = "Ez";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_fileEz(temp.c_str());
@@ -418,7 +419,7 @@ inline void Write_E_B_2D(int cycle, struct grid *grd, struct EMfield* field){
     
     // Bx
     filename = "Bx";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_fileBx(temp.c_str());
@@ -436,7 +437,7 @@ inline void Write_E_B_2D(int cycle, struct grid *grd, struct EMfield* field){
     
     // By
     filename = "By";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_fileBy(temp.c_str());
@@ -454,7 +455,7 @@ inline void Write_E_B_2D(int cycle, struct grid *grd, struct EMfield* field){
     
     // Bz
     filename = "Bz";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_fileBz(temp.c_str());
@@ -474,13 +475,13 @@ inline void Write_E_B_2D(int cycle, struct grid *grd, struct EMfield* field){
 }
 
 
-inline void Write_rho_J_2D(int cycle, struct grid *grd, struct interpDensSpecies* ids, struct interpDensNet* idn){
+inline void Write_rho_J_2D(int cycle, struct grid *grd, struct interpDensSpecies* ids, struct interpDensNet* idn, struct parameters* param){
     // stream file to be opened and managed
     string filename = "Jx_e_";
     string temp;
     std::stringstream cc;
     cc << cycle;
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     
     int nxn = grd->nxn;
@@ -507,7 +508,7 @@ inline void Write_rho_J_2D(int cycle, struct grid *grd, struct interpDensSpecies
     
     // Jy_e
     filename = "Jy_e";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_fileJy_e(temp.c_str());
@@ -526,7 +527,7 @@ inline void Write_rho_J_2D(int cycle, struct grid *grd, struct interpDensSpecies
     
     // Jz_e
     filename = "Jz_e";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_fileJz_e(temp.c_str());
@@ -545,7 +546,7 @@ inline void Write_rho_J_2D(int cycle, struct grid *grd, struct interpDensSpecies
     
     // Jx_i
     filename = "Jx_i";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_fileJx_i(temp.c_str());
@@ -563,7 +564,7 @@ inline void Write_rho_J_2D(int cycle, struct grid *grd, struct interpDensSpecies
     
     // Jy_i
     filename = "Jy_i";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_fileJy_i(temp.c_str());
@@ -582,7 +583,7 @@ inline void Write_rho_J_2D(int cycle, struct grid *grd, struct interpDensSpecies
     
     // Jz_i
     filename = "Jz_i";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_fileJz_i(temp.c_str());
@@ -601,7 +602,7 @@ inline void Write_rho_J_2D(int cycle, struct grid *grd, struct interpDensSpecies
     
     // rho_e
     filename = "rho_e";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_filerho_e(temp.c_str());
@@ -618,7 +619,7 @@ inline void Write_rho_J_2D(int cycle, struct grid *grd, struct interpDensSpecies
     
     // rho_i
     filename = "rho_i";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".spic";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_filerho_i(temp.c_str());
@@ -636,13 +637,13 @@ inline void Write_rho_J_2D(int cycle, struct grid *grd, struct interpDensSpecies
 }
 
 
-inline void VTK_Write_Vectors(int cycle, struct grid *grd, struct EMfield* field){
+inline void VTK_Write_Vectors(int cycle, struct grid *grd, struct EMfield* field, struct parameters* param){
     // stream file to be opened and managed
     string filename = "E";
     string temp;
     std::stringstream cc;
     cc << cycle;
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".vtk";
     std::cout << "Opening file: " << temp << std::endl;
     
@@ -686,7 +687,7 @@ inline void VTK_Write_Vectors(int cycle, struct grid *grd, struct EMfield* field
     my_fileE.close();
     
     filename = "B";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".vtk";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_file2(temp.c_str());
@@ -722,13 +723,13 @@ inline void VTK_Write_Vectors(int cycle, struct grid *grd, struct EMfield* field
     
 }
 
-inline void VTK_Write_J(int cycle, struct grid *grd, struct interpDensSpecies* ids, struct interpDensNet* idn){
+inline void VTK_Write_J(int cycle, struct grid *grd, struct interpDensSpecies* ids, struct interpDensNet* idn, struct parameters* param){
     // stream file to be opened and managed
     string filename = "Je";
     string temp;
     std::stringstream cc;
     cc << cycle;
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".vtk";
     std::cout << "Opening file: " << temp << std::endl;
     
@@ -766,7 +767,7 @@ inline void VTK_Write_J(int cycle, struct grid *grd, struct interpDensSpecies* i
     
     // Ji
     filename = "Ji";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".vtk";
     std::cout << "Opening file: " << temp << std::endl;
     
@@ -797,13 +798,13 @@ inline void VTK_Write_J(int cycle, struct grid *grd, struct interpDensSpecies* i
 }
 
 
-inline void VTK_Write_V(int cycle, struct grid *grd, struct interpDensSpecies* ids, struct interpDensNet* idn){
+inline void VTK_Write_V(int cycle, struct grid *grd, struct interpDensSpecies* ids, struct interpDensNet* idn, struct parameters* param){
     // stream file to be opened and managed
     string filename = "Ve";
     string temp;
     std::stringstream cc;
     cc << cycle;
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".vtk";
     std::cout << "Opening file: " << temp << std::endl;
     
@@ -841,7 +842,7 @@ inline void VTK_Write_V(int cycle, struct grid *grd, struct interpDensSpecies* i
     
     // Ji
     filename = "Vi";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".vtk";
     std::cout << "Opening file: " << temp << std::endl;
     
@@ -871,13 +872,13 @@ inline void VTK_Write_V(int cycle, struct grid *grd, struct interpDensSpecies* i
     
 }
 
-inline void VTK_Write_Scalars(int cycle, struct grid *grd, struct interpDensSpecies* ids, struct interpDensNet* idn){
+inline void VTK_Write_Scalars(int cycle, struct grid *grd, struct interpDensSpecies* ids, struct interpDensNet* idn, struct parameters* param){
     // stream file to be opened and managed
     string filename = "rhoe";
     string temp;
     std::stringstream cc;
     cc << cycle;
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".vtk";
     std::cout << "Opening file: " << temp << std::endl;
     
@@ -912,7 +913,7 @@ inline void VTK_Write_Scalars(int cycle, struct grid *grd, struct interpDensSpec
     my_file.close();
     
     filename = "rhoi";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".vtk";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_file2(temp.c_str());
@@ -936,7 +937,7 @@ inline void VTK_Write_Scalars(int cycle, struct grid *grd, struct interpDensSpec
     my_file2.close();
     
     filename = "rho_net";
-    temp = "./data/" + filename + "_"+ cc.str() ;
+    temp = param->SaveDirName + filename + "_"+ cc.str() ;
     temp += ".vtk";
     std::cout << "Opening file: " << temp << std::endl;
     std::ofstream my_file1(temp.c_str());

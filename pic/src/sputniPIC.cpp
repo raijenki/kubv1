@@ -151,12 +151,12 @@ int main(int argc, char **argv){
         // write E, B, rho to disk
         if (cycle%param.FieldOutputCycle==0){
             iIO = cpuSecond();
-            Write_E_B_2D(cycle, &grd,&field);
-            Write_rho_J_2D(cycle, &grd,ids,&idn);
-            //VTK_Write_Vectors(cycle, &grd,&field);
-            //VTK_Write_Scalars(cycle, &grd,ids,&idn);
-            //VTK_Write_J(cycle, &grd,ids,&idn);
-            //VTK_Write_V(cycle, &grd,ids,&idn);
+            Write_E_B_2D(cycle, &grd,&field, &param);
+            Write_rho_J_2D(cycle, &grd,ids,&idn, &param);
+            //VTK_Write_Vectors(cycle, &grd,&field, &param);
+            //VTK_Write_Scalars(cycle, &grd,ids,&idn, &param);
+            //VTK_Write_J(cycle, &grd,ids,&idn, &param);
+            //VTK_Write_V(cycle, &grd,ids,&idn, &param);
             eIO += (cpuSecond() - iIO); // stop timer for interpolation
         }
         
