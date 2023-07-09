@@ -20,7 +20,8 @@ RUN  apt-get update --fix-missing \
      && apt-get install -y build-essential python3 python3-pip ssh time
 RUN cd /home/ && git clone https://github.com/raijenki/hpc-tests.git \
     && cd /home/hpc-tests/pic/src && make \
-    && cp /home/hpc-tests/pic/src/sputniPIC /home && cp -r /home/hpc-tests/pic/src/inputfiles /home/inputfiles \
-    && rm -rf /home/hpc-tests
+    && cp /home/hpc-tests/pic/src/sputniPIC /home && cp -r /home/hpc-tests/pic/* /home/ \
+    && rm -rf /home/hpc-tests && rm -rf /home/src && rm /home/Dockerfile
+RUN chmod +x /home/sputiniPIC && chmod +x /home/exec_pic.sh && chmod +x end_exec.sh
 RUN mkdir -p /var/run/sshd;
 CMD /usr/sbin/sshd;
