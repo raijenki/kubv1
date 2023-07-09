@@ -1,4 +1,4 @@
-import os
+import os, json
 
 # Path to the persistent volume
 pvol_path = "/data/gem/"

@@ -11,8 +11,8 @@ from kubernetes.client import models as k8s
 PVC_NAME = 'pvc-autodock'
 MOUNT_PATH = '/data'
 VOLUME_KEY  = 'volume-autodock'
-
 namespace = conf.get('kubernetes_executor', 'NAMESPACE')
+pvol_path = "/home/daniel/k3dvol/gem/"
 
 def create_pod_spec(pic_id, wtype):
     volume = k8s.V1Volume(
@@ -20,7 +20,7 @@ def create_pod_spec(pic_id, wtype):
         persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name=PVC_NAME),
     )
     volume_mount = k8s.V1VolumeMount(mount_path=MOUNT_PATH, name=VOLUME_KEY)
-    pod_name = "pic" + "-" Â+ wtype + "-" + str(pic_id)
+    pod_name = "pic" + "-" + wtype + "-" + str(pic_id)
 
     # define a generic container, which can be used for all tasks
     container = k8s.V1Container(
@@ -37,6 +37,9 @@ def create_pod_spec(pic_id, wtype):
     full_pod_spec = k8s.V1Pod(spec=pod_spec)
     return full_pod_spec
 
+params = {
+        'ninputs': 4,
+}
 
 @dag(start_date=datetime(2021, 1, 1),
      schedule=None,
@@ -44,71 +47,36 @@ def create_pod_spec(pic_id, wtype):
      params=params)
 def pic(): 
     import os.path
-
-# 1 Prepare Pic
-    prepare_receptor = KubernetesPodOperator(
-        task_id='prepare_receptor',
-        full_pod_spec=create_pod_spec(0, 'prepare'),
-
-        cmds=['/autodock/scripts/1a_fetch_prepare_protein.sh', '{{ params.pdbid }}'],
-    )
-
-    # split_sdf: <n> <db_label> ->  N_batches
-    split_sdf = KubernetesPodOperator(
-        task_id='split_sdf',
-        full_pod_spec=full_pod_spec,
-
-        cmds = ['/bin/sh', '-c'],
-        arguments=['/autodock/scripts/split_sdf.sh {{ params.ligands_chunk_size }} {{ params.ligand_db }} > /airflow/xcom/return.json'],
-        do_xcom_push=True,
-    )
-
-    postprocessing = KubernetesPodOperator(
-        task_id='postprocessing',
-        full_pod_spec=full_pod_spec,
-
-        cmds=['/autodock/scripts/3_post_processing.sh', '{{ params.pdbid }}', '{{ params.ligand_db }}'],
-    )
-
-    @task
-    def get_batch_labels(db_label: str, n: int):
-        return [f'{db_label}_batch{i}' for i in range(n+1)]
-
-    @task_group
-    def docking(batch_label: str):
-        
-        prepare_ligands = KubernetesPodOperator(
-            task_id='prepare_ligands',
-            full_pod_spec=full_pod_spec,
-            get_logs=True,
-
-            cmds=['/autodock/scripts/1b_prepare_ligands.sh'],
-            arguments=['{{ params.pdbid }}', batch_label]
-        )
-
-        # perform_docking: <filelist> -> ()
-        perform_docking = KubernetesPodOperator(
-            task_id='perform_docking',
-            full_pod_spec=full_pod_spec_gpu,
-            container_resources=k8s.V1ResourceRequirements(
-                limits={"nvidia.com/gpu": "1"}
-            ),
-            pool='gpu_pool',
-
-            cmds=['/autodock/scripts/2_docking.sh'],
-            arguments=['{{ params.pdbid }}', batch_label],
-            get_logs=True
-        )
-
-        [prepare_receptor, prepare_ligands] >> perform_docking
-
-    # converts (db_label, n) to a list of batch_labels
-    batch_labels = get_batch_labels('sweetlead', split_sdf.output)
-
-    # for each batch_label, we create a prepare_ligand + perform_docking task
-    d = docking.expand(batch_label=batch_labels)
     
-    # add post-processing
-    d >> postprocessing
+    @task
+    prepare_inputs = KubernetesPodOperator(
+        task_id='prepare_inputs',
+        full_pod_spec=create_pod_spec(0, 'prepare'),
+        cmds=['python3']
+        arguments=['/home/preparation.py > /airflow/xcom/return.json'],
+        do_xcom_push=True
+    )
 
+# 4 tracker
+    @task 
+    tracker = KubernetesPodOperator(
+        task_id='tracker',
+        full_pod_spec=create_pod_spec(0, 'tracker'),
+
+        cmds=['python3', '/home/tracker.py'],
+    )
+
+# 3 execute pic
+    @task
+    def exec_pic(batch_label: str):
+        picexec = KubernetesPodOperator(
+            task_id='pic-worker',
+            full_pod_spec=create_pod_spec(batch_label, 'worker'),
+            get_logs=True,
+            cmds=['./exec_pic.sh', ],
+        )
+
+    ninputs_array = range(params.ninput - 1)
+    d = exec_pic.expand(batch_label=ninputs_array)
+    prepare_inputs >> [d, tracker] 
 pic()
