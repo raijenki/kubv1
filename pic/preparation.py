@@ -2,10 +2,10 @@ import os, json
 
 # Path to the persistent volume
 pvol_path = "/data/gem/"
-input_location = "inputfiles/"
+input_location = "/home/inputfiles/"
 
 # Get the inputfiles in which we should run our different pic instances
-with open('inputs.txt', 'r') as file:
+with open('/home/inputs.txt', 'r') as file:
     inputs = file.read().splitlines()
 
 for index, gem in enumerate(inputs):

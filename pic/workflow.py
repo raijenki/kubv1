@@ -3,7 +3,7 @@ from airflow.models.param import Param
 from airflow.decorators import dag, task, task_group
 from airflow.configuration import conf
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
-
+from airflow.utils.task_group import TaskGroup
 from datetime import datetime
 
 from kubernetes.client import models as k8s
@@ -20,11 +20,11 @@ def create_pod_spec(pic_id, wtype):
         persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name=PVC_NAME),
     )
     volume_mount = k8s.V1VolumeMount(mount_path=MOUNT_PATH, name=VOLUME_KEY)
-    pod_name = "pic" + "-" + wtype + "-" + str(pic_id)
+    pod_name = "pic-" +  str(wtype) + "-" + str(pic_id)
 
     # define a generic container, which can be used for all tasks
     container = k8s.V1Container(
-        name=pod_name
+        name=pod_name,
         image='raijenki/mpik8s:pic',
         working_dir=MOUNT_PATH,
 
@@ -48,35 +48,42 @@ params = {
 def pic(): 
     import os.path
     
-    @task
-    prepare_inputs = KubernetesPodOperator(
-        task_id='prepare_inputs',
-        full_pod_spec=create_pod_spec(0, 'prepare'),
-        cmds=['python3']
-        arguments=['/home/preparation.py > /airflow/xcom/return.json'],
-        do_xcom_push=True
+    end_exec = KubernetesPodOperator(
+        task_id='end_exec',
+        full_pod_spec=create_pod_spec(0, 'end'),
+        cmds = ['sleep 10'],
     )
 
-# 4 tracker
-    @task 
     tracker = KubernetesPodOperator(
-        task_id='tracker',
-        full_pod_spec=create_pod_spec(0, 'tracker'),
-
-        cmds=['python3', '/home/tracker.py'],
-    )
-
-# 3 execute pic
-    @task
-    def exec_pic(batch_label: str):
-        picexec = KubernetesPodOperator(
-            task_id='pic-worker',
-            full_pod_spec=create_pod_spec(batch_label, 'worker'),
+            task_id='tracker',
+            full_pod_spec=create_pod_spec(0, 'tracker'),
+            cmds=['python3', '/home/tracker.py'],
             get_logs=True,
-            cmds=['./exec_pic.sh', ],
+         )
+
+
+    prepare_inputs = KubernetesPodOperator(
+            task_id='prepare_inputs',
+            full_pod_spec=create_pod_spec(0, 'prepare-inputs'),
+            cmds=['python3'],
+            arguments=['/home/preparation.py'],
         )
 
-    ninputs_array = range(params.ninput - 1)
-    d = exec_pic.expand(batch_label=ninputs_array)
-    prepare_inputs >> [d, tracker] 
+    ninputs_array = [*range(0, int(params['ninputs']), 1)]
+    
+    with TaskGroup("pic-workers", tooltip="task group #1") as exec_pic:
+        for i in ninputs_array:
+            picexec = KubernetesPodOperator(
+                task_id=f'pic-worker-{i}',
+                full_pod_spec=create_pod_spec(i, 'worker'),
+                cmds=['./exec_pic.sh'],
+        )
+            picexec
+
+    
+    #d = exec_pic.expand(batch_label=ninputs_array)
+    
+    prepare_inputs >> [exec_pic, tracker] >> end_exec
+
+
 pic()
