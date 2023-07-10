@@ -1,7 +1,8 @@
 import os
 import time
 
-pvol_path = "/data/gem/"
+pvol_path = "/home/daniel/k3dvol/gem/"
+#pvol_path = "/data/gem/"
 directories = [] # This is to iterate over all directories
 finished_array = []
 ez_val = [] # Tracking what was the last time we checked 
@@ -45,7 +46,7 @@ for file, index in enumerate(directories):
             if target_key in line:
             # Extract the value associated with ncycles
                 value = line.split("=")[1].strip()
-                ncycles.append(value)
+                ncycles.append(int(value.split("#")[0]))
                 break
         else:
         # Handle the case when the target key is not found
@@ -65,5 +66,4 @@ while finished != len(directories):
                 max_val[int(index)] = pic_center_value
             ez_val[int(index)] = ez_val[int(index)] + 10
     time.sleep(5)
-
-print(max_val)
+    print(max_val)
