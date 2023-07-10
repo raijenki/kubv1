@@ -1,4 +1,5 @@
 import os
+import time
 
 pvol_path = "/data/gem/"
 directories = [] # This is to iterate over all directories
@@ -26,7 +27,7 @@ def maxSearch(file_path):
 # Here we check how many folders exists
 entries = os.listdir(pvol_path)
 for entry in entries:
-    entry_path = os.path.join(folder_path, entry)
+    entry_path = os.path.join(pvol_path, entry)
     if os.path.isdir(entry_path):
         directories.append(entry)
 
@@ -60,9 +61,9 @@ while finished != len(directories):
             finished_array[index] = 0
         elif os.path.exists(file_path):
             pic_center_value = maxSearch(file_path)
-            if pic_center_value > max_val[index]
+            if pic_center_value > max_val[index]:
                 max_val[index] = pic_center_value
             ez_val[index] = ez_val + 10
-    sleep(5)
+    time.sleep(5)
 
 print(max_val)
