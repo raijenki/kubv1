@@ -53,8 +53,9 @@ for file, index in enumerate(directories):
 
 # Here we start processing
 while finished != len(directories):
-    for file, index in enumerate(directories):        
-        file_path = pvol_path + str(index) + "/Ez_" + str(ez_val[index]) + ".spic"
+    for file, index in enumerate(directories): 
+        ez_val_str = ez_val[index]       
+        file_path = pvol_path + str(index) + "/Ez_" + str(ez_val_str) + ".spic"
         # Check if this file exists
         if ez_val[index] > ncycles[index] and finished_array[index] != 0:
             finished = finished + 1
