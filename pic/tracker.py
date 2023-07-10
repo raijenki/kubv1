@@ -17,8 +17,8 @@ def maxSearch(file_path):
 
         for line_number, line in enumerate(file):
             values = line.strip().split()
-            array_val.append([float(value) for value in values]
-            if line_number == center_row and len(array_values[-1]) > center_column:
+            array_val.append([float(value) for value in values])
+            if line_number == center_row and len(array_val[-1]) > center_column:
                 element = array_val[center_row][center_column]
                 break
     return abs(element)

@@ -25,7 +25,7 @@ def create_pod_spec(pic_id, wtype):
     # define a generic container, which can be used for all tasks
     container = k8s.V1Container(
         name=pod_name,
-        image='raijenki/mpik8s:picv3',
+        image='raijenki/mpik8s:picv4',
         working_dir=MOUNT_PATH,
 
         volume_mounts=[volume_mount],
@@ -39,8 +39,12 @@ def create_pod_spec(pic_id, wtype):
     return full_pod_spec
 
 params = {
-        'ninputs': 4,
+        'ninputs': 5,
 }
+
+@task
+def list_inputs(params=None):
+    return [f'pic-worker-{i}' for i in range(0, int(params['ninputs']))]
 
 @dag(start_date=datetime(2021, 1, 1),
      schedule=None,
@@ -69,22 +73,21 @@ def pic():
             cmds=['python3'],
             arguments=['/home/preparation.py'],
         )
-
-    ninputs_array = [*range(0, int(params['ninputs']), 1)]
     
-    with TaskGroup("pic-workers", tooltip="pic executors") as exec_pic:
-        for i in ninputs_array:
-            picexec = KubernetesPodOperator(
-                task_id=f'pic-worker-{i}',
-                full_pod_spec=create_pod_spec(i, 'worker'),
-                cmds=['./exec_pic.sh'],
-        )
-            picexec
+    picexec = KubernetesPodOperator.partial(
+        task_id=f'pic-worker',
+        full_pod_spec=create_pod_spec(0, 'worker'),
+        cmds = ['/bin/sh', '-c']
+        arguments=['/home/exec_pic.sh'],
+    ).expand(name=list_inputs())
+   
+    # prepare_inputs >> picexec
+    # prepare_inputs >> tracker
 
-    
+
     #d = exec_pic.expand(batch_label=ninputs_array)
     
-    prepare_inputs >> [exec_pic, tracker] >> end_exec
+    prepare_inputs >> [picexec, tracker] >> end_exec
 
 
 pic()
