@@ -56,14 +56,14 @@ while finished != len(directories):
     for file, index in enumerate(directories): 
         file_path = pvol_path + str(index) + "/Ez_" + str(ez_val[int(index)]) + ".spic"
         # Check if this file exists
-        if ez_val[index] > ncycles[index] and finished_array[index] != 0:
+        if ez_val[int(index)] > ncycles[int(index)] and finished_array[int(index)] != 0:
             finished = finished + 1
-            finished_array[index] = 0
+            finished_array[int(index)] = 0
         elif os.path.exists(file_path):
             pic_center_value = maxSearch(file_path)
-            if pic_center_value > max_val[index]:
-                max_val[index] = pic_center_value
-            ez_val[index] = ez_val[index] + 10
+            if pic_center_value > max_val[int(index)]:
+                max_val[int(index)] = pic_center_value
+            ez_val[int(index)] = ez_val[int(index)] + 10
     time.sleep(5)
 
 print(max_val)
