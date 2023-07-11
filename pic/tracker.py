@@ -1,7 +1,8 @@
 import os
 import time
 
-pvol_path = "/data/gem/"
+pvol_path = "/home/daniel/k3dvol/gem/"
+#pvol_path = "/data/gem/"
 directories = [] # This is to iterate over all directories
 finished_array = []
 ez_val = [] # Tracking what was the last time we checked 
@@ -51,18 +52,22 @@ for file, index in enumerate(directories):
         # Handle the case when the target key is not found
             value = 0
 
+res = [eval(i) for i in directories]
+directories = sorted(res)
+
 # Here we start processing
 while finished != len(directories):
     for file, index in enumerate(directories): 
+        #print("file: ", str(file) + ", index: " + str(index))
         file_path = pvol_path + str(index) + "/Ez_" + str(ez_val[int(index)]) + ".spic"
         # Check if this file exists
-        if ez_val[int(index)] > ncycles[int(index)] and finished_array[int(index)] != 0:
+        if ez_val[int(index)] > ncycles[int(index)] and finished_array[int(index)] == 0:
             finished = finished + 1
-            finished_array[int(index)] = 0
-        elif os.path.exists(file_path):
-            pic_center_value = maxSearch(file_path)
-            if pic_center_value > max_val[int(index)]:
-                max_val[int(index)] = pic_center_value
-            ez_val[int(index)] = ez_val[int(index)] + 10
-    time.sleep(5)
-    print(max_val)
+            finished_array[int(index)] = 1
+        else:
+            if os.path.isfile(file_path):
+                pic_center_value = maxSearch(file_path)
+                if pic_center_value > max_val[int(index)]:
+                    max_val[int(index)] = pic_center_value
+                ez_val[int(index)] = ez_val[int(index)] + 10
+    
