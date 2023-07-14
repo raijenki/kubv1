@@ -1,8 +1,8 @@
 import os
 import time
 
-pvol_path = "/home/daniel/k3dvol/gem/"
-#pvol_path = "/data/gem/"
+#pvol_path = "/home/daniel/k3dvol/gem/"
+pvol_path = "/data/gem/"
 directories = [] # This is to iterate over all directories
 finished_array = []
 ez_val = [] # Tracking what was the last time we checked 
