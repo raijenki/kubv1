@@ -68,12 +68,12 @@ while finished != len(directories):
             finished_array[int(index)] = 1
         else:
             while hold == 1:
-                print(file_path)
                 if os.path.isfile(file_path):
                     pic_center_value = maxSearch(file_path)
                     if pic_center_value != 0:
                         hold = 0
+                        ez_val[int(index)] = ez_val[int(index)] + 10
                     if pic_center_value > max_val[int(index)]:
                         max_val[int(index)] = pic_center_value
-                    ez_val[int(index)] = ez_val[int(index)] + 10
-
+print(ez_val)
+print(max_val)
