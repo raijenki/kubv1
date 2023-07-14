@@ -1,7 +1,8 @@
 import os
 import time
 
-pvol_path = "/data/gem/"
+pvol_path = "/home/daniel/k3dvol/gem/"
+#pvol_path = "/data/gem/"
 directories = [] # This is to iterate over all directories
 finished_array = []
 ez_val = [] # Tracking what was the last time we checked 
@@ -11,6 +12,7 @@ finished = 0
 
 # Gets center element from Ez file, hardcoded grid size
 def maxSearch(file_path):
+    element = 0
     with open(file_path, "r") as file:
         center_row = 63
         center_column = 31
@@ -53,10 +55,11 @@ for file, index in enumerate(directories):
 
 res = [eval(i) for i in directories]
 directories = sorted(res)
-
 # Here we start processing
 while finished != len(directories):
-    for file, index in enumerate(directories): 
+    for file, index in enumerate(directories):
+        time.sleep(1)
+        hold = 1
         #print("file: ", str(file) + ", index: " + str(index))
         file_path = pvol_path + str(index) + "/Ez_" + str(ez_val[int(index)]) + ".spic"
         # Check if this file exists
@@ -64,9 +67,13 @@ while finished != len(directories):
             finished = finished + 1
             finished_array[int(index)] = 1
         else:
-            if os.path.isfile(file_path):
-                pic_center_value = maxSearch(file_path)
-                if pic_center_value > max_val[int(index)]:
-                    max_val[int(index)] = pic_center_value
-                ez_val[int(index)] = ez_val[int(index)] + 10
-    
+            while hold == 1:
+                print(file_path)
+                if os.path.isfile(file_path):
+                    pic_center_value = maxSearch(file_path)
+                    if pic_center_value != 0:
+                        hold = 0
+                    if pic_center_value > max_val[int(index)]:
+                        max_val[int(index)] = pic_center_value
+                    ez_val[int(index)] = ez_val[int(index)] + 10
+
