@@ -81,8 +81,7 @@ def create_additional_pods(num_pods, _job_name):
     k8s = Kubernetes()
 
     # STEP1: CREATE A CONTAINER
-    #_image = "busybox"
-    _image = "raijenki/mpik8s:gromacs"
+    _image = "raijenki/mpik8s:gromacs-kub"
     _name = "scheduler"
     _pull_policy = "Always"
 
